@@ -110,7 +110,9 @@ class AppDrawerActivity : AppCompatActivity() {
     }
 
     override fun onBackPressed() {
-        closeDrawer()
+        hideKeyboard()
+        super.onBackPressed()
+        overridePendingTransition(0, R.anim.slide_down)
     }
 
     private fun launchApp(app: AppInfo) {

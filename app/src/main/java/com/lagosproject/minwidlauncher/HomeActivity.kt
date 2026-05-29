@@ -654,8 +654,14 @@ class HomeActivity : AppCompatActivity() {
         if (!PrefsHelper.loadUseDefaultColors(this)) return
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O_MR1) {
-            // HINT_SUPPORTS_DARK_TEXT is set when the wallpaper is very light
-            val supportsDarkText = (colors?.colorHints ?: 0) and android.app.WallpaperColors.HINT_SUPPORTS_DARK_TEXT != 0
+            // HINT_SUPPORTS_DARK_TEXT was added in API 31 (Android 12)
+            val supportsDarkText = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                colors?.let {
+                    (it.colorHints and android.app.WallpaperColors.HINT_SUPPORTS_DARK_TEXT) != 0
+                } ?: false
+            } else {
+                false
+            }
             
             // Base text color depending on wallpaper brightness
             val baseColor = if (supportsDarkText) Color.BLACK else Color.WHITE
