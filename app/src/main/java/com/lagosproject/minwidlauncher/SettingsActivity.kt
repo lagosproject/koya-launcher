@@ -1,4 +1,4 @@
-package com.minimallauncher
+package com.lagosproject.minwidlauncher
 
 import android.app.AppOpsManager
 import android.content.Context
@@ -10,7 +10,7 @@ import android.widget.SeekBar
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import com.minimallauncher.databinding.ActivitySettingsBinding
+import com.lagosproject.minwidlauncher.databinding.ActivitySettingsBinding
 
 class SettingsActivity : AppCompatActivity() {
 

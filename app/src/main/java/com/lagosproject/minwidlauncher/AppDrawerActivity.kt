@@ -1,4 +1,4 @@
-package com.minimallauncher
+package com.lagosproject.minwidlauncher
 
 import android.content.Intent
 import android.content.pm.PackageManager
@@ -13,7 +13,7 @@ import android.net.Uri
 import android.provider.Settings
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.minimallauncher.databinding.ActivityAppDrawerBinding
+import com.lagosproject.minwidlauncher.databinding.ActivityAppDrawerBinding
 import kotlin.math.abs
 import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.Dispatchers

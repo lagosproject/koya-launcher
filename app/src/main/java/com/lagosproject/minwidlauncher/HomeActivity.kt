@@ -1,4 +1,4 @@
-package com.minimallauncher
+package com.lagosproject.minwidlauncher
 
 import android.app.Activity
 import android.appwidget.AppWidgetHost
@@ -30,7 +30,7 @@ import android.widget.FrameLayout
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import com.minimallauncher.databinding.ActivityHomeBinding
+import com.lagosproject.minwidlauncher.databinding.ActivityHomeBinding
 import androidx.core.graphics.ColorUtils
 import java.text.SimpleDateFormat
 import java.util.*

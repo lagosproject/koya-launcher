@@ -1,4 +1,4 @@
-package com.minimallauncher
+package com.lagosproject.minwidlauncher
 
 import android.app.Activity
 import android.content.Intent

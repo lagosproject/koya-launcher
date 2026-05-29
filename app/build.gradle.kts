@@ -1,25 +1,51 @@
+import java.util.Properties
+
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
 }
 
 android {
-    namespace = "com.minimallauncher"
+    namespace = "com.lagosproject.minwidlauncher"
     compileSdk = 34
 
+    signingConfigs {
+        create("release") {
+            val keystorePropertiesFile = rootProject.file("local.properties")
+            if (keystorePropertiesFile.exists()) {
+                val properties = Properties()
+                properties.load(keystorePropertiesFile.inputStream())
+                
+                val keyFile = properties.getProperty("release.keystore.path")
+                if (keyFile != null) {
+                    storeFile = file(keyFile)
+                    storePassword = properties.getProperty("release.keystore.password")
+                    keyAlias = properties.getProperty("release.key.alias")
+                    keyPassword = properties.getProperty("release.key.password")
+                }
+            }
+        }
+    }
+
     defaultConfig {
-        applicationId = "com.minimallauncher"
+        applicationId = "com.lagosproject.minwidlauncher"
         minSdk = 26
         targetSdk = 34
         versionCode = 1
-        versionName = "1.0"
+        versionName = "1.0.0"
     }
 
     buildTypes {
         release {
             isMinifyEnabled = true
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
-            signingConfig = signingConfigs.getByName("debug")
+            
+            val releaseConfig = signingConfigs.findByName("release")
+            if (releaseConfig != null && releaseConfig.storeFile != null) {
+                signingConfig = releaseConfig
+            } else {
+                signingConfig = signingConfigs.getByName("debug")
+            }
         }
     }
 
