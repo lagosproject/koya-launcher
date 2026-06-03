@@ -32,6 +32,10 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.lagosproject.minwidlauncher.databinding.ActivityHomeBinding
 import androidx.core.graphics.ColorUtils
+import androidx.lifecycle.lifecycleScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.text.SimpleDateFormat
 import java.util.*
 import kotlin.math.abs
@@ -121,6 +125,22 @@ class HomeActivity : AppCompatActivity() {
         }
     }
 
+    private val requestCalendarPermissionLauncher = registerForActivityResult(
+        androidx.activity.result.contract.ActivityResultContracts.RequestPermission()
+    ) { isGranted ->
+        if (isGranted) {
+            updateNextEvent()
+            try {
+                startActivity(Intent(Intent.ACTION_MAIN).apply {
+                    addCategory(Intent.CATEGORY_APP_CALENDAR)
+                    addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                })
+            } catch (e: Exception) { /* ignore */ }
+        } else {
+            Toast.makeText(this, getString(R.string.calendar_permission_required), Toast.LENGTH_SHORT).show()
+        }
+    }
+
     private val dateFormat = SimpleDateFormat("EEEE, MMM d", Locale.getDefault())
     private val dateHandler = Handler(Looper.getMainLooper())
     private val dateRunnable = object : Runnable {
@@ -176,10 +196,6 @@ class HomeActivity : AppCompatActivity() {
         setupShortcuts()
         setupGestureDetector()
         setupWidgetArea()
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O_MR1) {
-            setupWallpaperColorListener()
-        }
     }
 
     override fun onStart() {
@@ -192,6 +208,9 @@ class HomeActivity : AppCompatActivity() {
             androidx.core.content.ContextCompat.RECEIVER_NOT_EXPORTED
         )
         dateHandler.post(dateRunnable)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O_MR1) {
+            setupWallpaperColorListener()
+        }
     }
 
     override fun onStop() {
@@ -199,6 +218,9 @@ class HomeActivity : AppCompatActivity() {
         appWidgetHost.stopListening()
         unregisterReceiver(batteryReceiver)
         dateHandler.removeCallbacks(dateRunnable)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O_MR1) {
+            unregisterWallpaperColorListener()
+        }
     }
 
     override fun onResume() {
@@ -258,7 +280,7 @@ class HomeActivity : AppCompatActivity() {
             updateNextEvent()
             binding.tvNextEvent.setOnClickListener {
                 if (checkSelfPermission(android.Manifest.permission.READ_CALENDAR) != PackageManager.PERMISSION_GRANTED) {
-                    requestPermissions(arrayOf(android.Manifest.permission.READ_CALENDAR), 123)
+                    requestCalendarPermissionLauncher.launch(android.Manifest.permission.READ_CALENDAR)
                 } else {
                     try {
                         startActivity(Intent(Intent.ACTION_MAIN).apply {
@@ -317,29 +339,31 @@ class HomeActivity : AppCompatActivity() {
             return
         }
 
-        val usageStatsManager = getSystemService(Context.USAGE_STATS_SERVICE) as UsageStatsManager
-        val endTime = System.currentTimeMillis()
-        val calendar = Calendar.getInstance()
-        calendar.set(Calendar.HOUR_OF_DAY, 0)
-        calendar.set(Calendar.MINUTE, 0)
-        calendar.set(Calendar.SECOND, 0)
-        calendar.set(Calendar.MILLISECOND, 0)
-        val startTime = calendar.timeInMillis
+        lifecycleScope.launch(Dispatchers.IO) {
+            val usageStatsManager = getSystemService(Context.USAGE_STATS_SERVICE) as UsageStatsManager
+            val endTime = System.currentTimeMillis()
+            val calendar = Calendar.getInstance()
+            calendar.set(Calendar.HOUR_OF_DAY, 0)
+            calendar.set(Calendar.MINUTE, 0)
+            calendar.set(Calendar.SECOND, 0)
+            calendar.set(Calendar.MILLISECOND, 0)
+            val startTime = calendar.timeInMillis
 
-        val stats = usageStatsManager.queryUsageStats(UsageStatsManager.INTERVAL_DAILY, startTime, endTime)
-        var totalTimeMs = 0L
-        stats?.forEach { totalTimeMs += it.totalTimeInForeground }
+            val stats = usageStatsManager.queryUsageStats(UsageStatsManager.INTERVAL_DAILY, startTime, endTime)
+            var totalTimeMs = 0L
+            stats?.forEach { totalTimeMs += it.totalTimeInForeground }
 
-        val hours = totalTimeMs / (1000 * 60 * 60)
-        val minutes = (totalTimeMs / (1000 * 60)) % 60
-        binding.tvUsage.text = String.format("%dh %dm", hours, minutes)
+            val hours = totalTimeMs / (1000 * 60 * 60)
+            val minutes = (totalTimeMs / (1000 * 60)) % 60
+            val usageText = String.format("%dh %dm", hours, minutes)
+
+            withContext(Dispatchers.Main) {
+                binding.tvUsage.text = usageText
+            }
+        }
     }
 
-    private fun hasUsageStatsPermission(): Boolean {
-        val appOps = getSystemService(Context.APP_OPS_SERVICE) as AppOpsManager
-        val mode = appOps.checkOpNoThrow(AppOpsManager.OPSTR_GET_USAGE_STATS, android.os.Process.myUid(), packageName)
-        return mode == AppOpsManager.MODE_ALLOWED
-    }
+    private fun hasUsageStatsPermission(): Boolean = PermissionHelper.hasUsageStatsPermission(this)
 
     private fun updateNextEvent() {
         if (!PrefsHelper.loadShowCalendarEvents(this)) {
@@ -353,40 +377,49 @@ class HomeActivity : AppCompatActivity() {
             return
         }
 
-        val now = System.currentTimeMillis()
-        val builder = CalendarContract.Instances.CONTENT_URI.buildUpon()
-        ContentUris.appendId(builder, now)
-        ContentUris.appendId(builder, now + 7 * 24 * 60 * 60 * 1000L) // Next 7 days
+        lifecycleScope.launch(Dispatchers.IO) {
+            val now = System.currentTimeMillis()
+            val builder = CalendarContract.Instances.CONTENT_URI.buildUpon()
+            ContentUris.appendId(builder, now)
+            ContentUris.appendId(builder, now + 7 * 24 * 60 * 60 * 1000L) // Next 7 days
 
-        val projection = arrayOf(
-            CalendarContract.Instances.TITLE,
-            CalendarContract.Instances.BEGIN
-        )
-        val sortOrder = "${CalendarContract.Instances.BEGIN} ASC LIMIT 1"
+            val projection = arrayOf(
+                CalendarContract.Instances.TITLE,
+                CalendarContract.Instances.BEGIN
+            )
+            val sortOrder = "${CalendarContract.Instances.BEGIN} ASC LIMIT 1"
 
-        try {
-            contentResolver.query(
-                builder.build(),
-                projection,
-                null,
-                null,
-                sortOrder
-            )?.use { cursor ->
-                if (cursor.moveToFirst()) {
-                    val title = cursor.getString(0)
-                    val startTime = cursor.getLong(1)
-                    val timeStr = formatEventDateTime(this, startTime)
-                    binding.tvNextEvent.text = "$timeStr - $title"
+            var eventText: String? = null
+            var showEvent = false
+
+            try {
+                contentResolver.query(
+                    builder.build(),
+                    projection,
+                    null,
+                    null,
+                    sortOrder
+                )?.use { cursor ->
+                    if (cursor.moveToFirst()) {
+                        val title = cursor.getString(0)
+                        val startTime = cursor.getLong(1)
+                        val timeStr = formatEventDateTime(this@HomeActivity, startTime)
+                        eventText = "$timeStr - $title"
+                        showEvent = true
+                    }
+                }
+            } catch (e: Exception) {
+                Log.e("MinimalLauncher", "Error querying calendar", e)
+            }
+
+            withContext(Dispatchers.Main) {
+                if (showEvent && eventText != null) {
+                    binding.tvNextEvent.text = eventText
                     binding.tvNextEvent.visibility = View.VISIBLE
                 } else {
                     binding.tvNextEvent.visibility = View.GONE
                 }
-            } ?: run {
-                binding.tvNextEvent.visibility = View.GONE
             }
-        } catch (e: Exception) {
-            Log.e("MinimalLauncher", "Error querying calendar", e)
-            binding.tvNextEvent.visibility = View.GONE
         }
     }
 
@@ -681,13 +714,19 @@ class HomeActivity : AppCompatActivity() {
         }
     }
 
-    override fun onDestroy() {
-        super.onDestroy()
+    private fun unregisterWallpaperColorListener() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O_MR1) {
             wallpaperColorListener?.let {
                 WallpaperManager.getInstance(this).removeOnColorsChangedListener(it)
                 wallpaperColorListener = null
             }
+        }
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O_MR1) {
+            unregisterWallpaperColorListener()
         }
     }
 }

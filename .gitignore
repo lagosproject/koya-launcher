@@ -28,6 +28,8 @@ secrets.properties
 signing.properties
 *.keystore
 *.jks
+keystore.properties
+
 
 # Built APKs/Bundles
 *.apk

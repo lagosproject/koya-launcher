@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <!-- Base Strings -->
-    <string name="app_name">MinimalLauncher</string>
+    <string name="app_name">MinWid</string>
     <string name="widget_hint">pulsar prolongadamente para añadir widget</string>
     <string name="empty_shortcut">+</string>
     <string name="search_hint">buscar aplicaciones…</string>

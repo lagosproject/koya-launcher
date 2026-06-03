@@ -1,9 +1,9 @@
 package com.lagosproject.minwidlauncher
 
-import android.app.AppOpsManager
 import android.content.Context
 import android.content.Intent
 import android.graphics.Color
+import android.graphics.drawable.GradientDrawable
 import android.os.Bundle
 import android.view.View
 import android.widget.SeekBar
@@ -16,7 +16,6 @@ class SettingsActivity : AppCompatActivity() {
 
     companion object {
         const val RESULT_WIDGET_REMOVE = 100
-        private const val REQUEST_SHORTCUT_BASE = 300
     }
 
     private lateinit var binding: ActivitySettingsBinding
@@ -35,26 +34,92 @@ class SettingsActivity : AppCompatActivity() {
         activeShortcutSlot = -1
     }
 
+    private val requestCalendarPermissionLauncher = registerForActivityResult(
+        androidx.activity.result.contract.ActivityResultContracts.RequestPermission()
+    ) { isGranted ->
+        if (isGranted) {
+            binding.swCalendarEvents.isChecked = true
+        } else {
+            binding.swCalendarEvents.isChecked = false
+            Toast.makeText(this, getString(R.string.calendar_permission_required), Toast.LENGTH_LONG).show()
+        }
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivitySettingsBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
         // Load existing values
-        binding.etAppDrawerTextSize.setText(PrefsHelper.loadAppDrawerTextSize(this).toString())
-        binding.etHomeShortcutTextSize.setText(PrefsHelper.loadHomeShortcutTextSize(this).toString())
-        binding.etWidgetHeight.setText(PrefsHelper.loadWidgetHeight(this).toString())
-        binding.swBatteryBar.isChecked = PrefsHelper.loadBatteryBarVisible(this)
-        
-        binding.swDefaultColors.isChecked = PrefsHelper.loadUseDefaultColors(this)
-        val customColor = PrefsHelper.loadCustomTextColor(this)
-        currentColor = customColor
-        binding.etCustomColor.setText(String.format("#%06X", 0xFFFFFF and customColor))
-        binding.swUsageCounter.isChecked = PrefsHelper.loadShowUsageCounter(this)
-        binding.swCalendarEvents.isChecked = PrefsHelper.loadShowCalendarEvents(this)
+        val appDrawerSize = PrefsHelper.loadAppDrawerTextSize(this).coerceIn(12, 36)
+        binding.sbAppDrawerTextSize.progress = appDrawerSize - 12
+        binding.tvAppDrawerTextSizeVal.text = "${appDrawerSize}sp"
 
-        // Open color picker when tapping custom color
-        binding.etCustomColor.setOnClickListener {
+        val homeShortcutSize = PrefsHelper.loadHomeShortcutTextSize(this).coerceIn(12, 36)
+        binding.sbHomeShortcutTextSize.progress = homeShortcutSize - 12
+        binding.tvHomeShortcutTextSizeVal.text = "${homeShortcutSize}sp"
+
+        val widgetHeight = PrefsHelper.loadWidgetHeight(this).coerceIn(100, 600)
+        binding.sbWidgetHeight.progress = widgetHeight - 100
+        binding.tvWidgetHeightVal.text = "${widgetHeight}dp"
+
+        binding.swBatteryBar.isChecked = PrefsHelper.loadBatteryBarVisible(this)
+        binding.swDefaultColors.isChecked = PrefsHelper.loadUseDefaultColors(this)
+
+        currentColor = PrefsHelper.loadCustomTextColor(this)
+        updateColorIndicator(currentColor)
+
+        binding.swUsageCounter.isChecked = PrefsHelper.loadShowUsageCounter(this) && hasUsageStatsPermission()
+        binding.swCalendarEvents.isChecked = PrefsHelper.loadShowCalendarEvents(this) &&
+                (checkSelfPermission(android.Manifest.permission.READ_CALENDAR) == android.content.pm.PackageManager.PERMISSION_GRANTED)
+
+        // Setup Seekbar Listeners
+        binding.sbAppDrawerTextSize.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
+            override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
+                binding.tvAppDrawerTextSizeVal.text = "${progress + 12}sp"
+            }
+            override fun onStartTrackingTouch(seekBar: SeekBar?) {}
+            override fun onStopTrackingTouch(seekBar: SeekBar?) {}
+        })
+
+        binding.sbHomeShortcutTextSize.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
+            override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
+                binding.tvHomeShortcutTextSizeVal.text = "${progress + 12}sp"
+            }
+            override fun onStartTrackingTouch(seekBar: SeekBar?) {}
+            override fun onStopTrackingTouch(seekBar: SeekBar?) {}
+        })
+
+        binding.sbWidgetHeight.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
+            override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
+                binding.tvWidgetHeightVal.text = "${progress + 100}dp"
+            }
+            override fun onStartTrackingTouch(seekBar: SeekBar?) {}
+            override fun onStopTrackingTouch(seekBar: SeekBar?) {}
+        })
+
+        // Setup switch listeners for permission checking
+        binding.swUsageCounter.setOnCheckedChangeListener { _, isChecked ->
+            if (isChecked && !hasUsageStatsPermission()) {
+                Toast.makeText(this, getString(R.string.usage_access_required), Toast.LENGTH_LONG).show()
+                startActivity(Intent(android.provider.Settings.ACTION_USAGE_ACCESS_SETTINGS))
+                binding.swUsageCounter.isChecked = false
+            }
+        }
+
+        binding.swCalendarEvents.setOnCheckedChangeListener { _, isChecked ->
+            if (isChecked && checkSelfPermission(android.Manifest.permission.READ_CALENDAR) != android.content.pm.PackageManager.PERMISSION_GRANTED) {
+                requestCalendarPermissionLauncher.launch(android.Manifest.permission.READ_CALENDAR)
+            }
+        }
+
+        binding.swDefaultColors.setOnCheckedChangeListener { _, isChecked ->
+            updateCustomColorRowState(isChecked)
+        }
+        updateCustomColorRowState(binding.swDefaultColors.isChecked)
+
+        // Open color picker when tapping custom color row
+        binding.rowCustomColor.setOnClickListener {
             showColorPicker()
         }
 
@@ -69,8 +134,9 @@ class SettingsActivity : AppCompatActivity() {
             openDefaultLauncherSettings()
         }
 
-        binding.btnSave.setOnClickListener {
-            saveSettings()
+        // Header back button
+        binding.btnBack.setOnClickListener {
+            finish()
         }
 
         // Shortcut pickers
@@ -108,39 +174,47 @@ class SettingsActivity : AppCompatActivity() {
     }
 
     private fun openDefaultLauncherSettings() {
-        val intent = android.content.Intent(android.provider.Settings.ACTION_HOME_SETTINGS)
+        val intent = Intent(android.provider.Settings.ACTION_HOME_SETTINGS)
         try {
             startActivity(intent)
         } catch (e: Exception) {
-            // Fallback for older Android versions
-            val fallback = android.content.Intent(android.provider.Settings.ACTION_SETTINGS)
+            val fallback = Intent(android.provider.Settings.ACTION_SETTINGS)
             startActivity(fallback)
         }
     }
 
+    private fun updateCustomColorRowState(useDefaultColors: Boolean) {
+        if (useDefaultColors) {
+            binding.rowCustomColor.alpha = 0.4f
+            binding.rowCustomColor.isClickable = false
+            binding.rowCustomColor.isFocusable = false
+        } else {
+            binding.rowCustomColor.alpha = 1.0f
+            binding.rowCustomColor.isClickable = true
+            binding.rowCustomColor.isFocusable = true
+        }
+    }
+
+    private fun updateColorIndicator(color: Int) {
+        currentColor = color
+        binding.tvCustomColorHex.text = String.format("#%06X", 0xFFFFFF and color)
+        val drawable = GradientDrawable().apply {
+            shape = GradientDrawable.OVAL
+            setColor(color)
+            setStroke(2, Color.parseColor("#40FFFFFF"))
+        }
+        binding.viewColorIndicator.background = drawable
+    }
+
     private fun saveSettings() {
-        val appDrawerSize = (binding.etAppDrawerTextSize.text.toString().toIntOrNull() ?: 22).coerceIn(12, 48)
-        val homeShortcutSize = (binding.etHomeShortcutTextSize.text.toString().toIntOrNull() ?: 18).coerceIn(12, 48)
-        val widgetHeight = (binding.etWidgetHeight.text.toString().toIntOrNull() ?: 350).coerceIn(100, 800)
+        val appDrawerSize = binding.sbAppDrawerTextSize.progress + 12
+        val homeShortcutSize = binding.sbHomeShortcutTextSize.progress + 12
+        val widgetHeight = binding.sbWidgetHeight.progress + 100
         val batteryVisible = binding.swBatteryBar.isChecked
         
         val useDefaultColors = binding.swDefaultColors.isChecked
-        val colorHex = binding.etCustomColor.text.toString()
-        val customColor = try { Color.parseColor(colorHex) } catch (e: Exception) { currentColor }
         val showUsage = binding.swUsageCounter.isChecked
         val showCalendar = binding.swCalendarEvents.isChecked
-
-        if (showUsage && !hasUsageStatsPermission()) {
-            Toast.makeText(this, getString(R.string.usage_access_required), Toast.LENGTH_LONG).show()
-            startActivity(Intent(android.provider.Settings.ACTION_USAGE_ACCESS_SETTINGS))
-            return
-        }
-
-        if (showCalendar && checkSelfPermission(android.Manifest.permission.READ_CALENDAR) != android.content.pm.PackageManager.PERMISSION_GRANTED) {
-            Toast.makeText(this, getString(R.string.calendar_permission_required), Toast.LENGTH_LONG).show()
-            requestPermissions(arrayOf(android.Manifest.permission.READ_CALENDAR), 124)
-            return
-        }
 
         PrefsHelper.saveAppDrawerTextSize(this, appDrawerSize)
         PrefsHelper.saveHomeShortcutTextSize(this, homeShortcutSize)
@@ -148,15 +222,25 @@ class SettingsActivity : AppCompatActivity() {
         PrefsHelper.saveBatteryBarVisible(this, batteryVisible)
         
         PrefsHelper.saveUseDefaultColors(this, useDefaultColors)
-        PrefsHelper.saveCustomTextColor(this, customColor)
-        PrefsHelper.saveShowUsageCounter(this, showUsage)
-        PrefsHelper.saveShowCalendarEvents(this, showCalendar)
-
-        Toast.makeText(this, getString(R.string.settings_saved), Toast.LENGTH_SHORT).show()
+        PrefsHelper.saveCustomTextColor(this, currentColor)
         
-        // Return to HomeActivity
-        setResult(RESULT_OK)
-        finish()
+        // Save permission-guarded settings only if permissions are valid
+        PrefsHelper.saveShowUsageCounter(this, showUsage && hasUsageStatsPermission())
+        PrefsHelper.saveShowCalendarEvents(this, showCalendar &&
+                (checkSelfPermission(android.Manifest.permission.READ_CALENDAR) == android.content.pm.PackageManager.PERMISSION_GRANTED))
+    }
+
+    override fun onPause() {
+        super.onPause()
+        saveSettings()
+    }
+
+    override fun onResume() {
+        super.onResume()
+        // Synchronize switch states with actual system permissions in case user changed them in settings
+        binding.swUsageCounter.isChecked = PrefsHelper.loadShowUsageCounter(this) && hasUsageStatsPermission()
+        binding.swCalendarEvents.isChecked = PrefsHelper.loadShowCalendarEvents(this) &&
+                (checkSelfPermission(android.Manifest.permission.READ_CALENDAR) == android.content.pm.PackageManager.PERMISSION_GRANTED)
     }
 
     private fun pickShortcutApp(slot: Int) {
@@ -165,13 +249,7 @@ class SettingsActivity : AppCompatActivity() {
         pickShortcutLauncher.launch(intent)
     }
 
-    // Legacy onActivityResult removed - replaced by Activity Result Launcher
-
-    private fun hasUsageStatsPermission(): Boolean {
-        val appOps = getSystemService(Context.APP_OPS_SERVICE) as AppOpsManager
-        val mode = appOps.checkOpNoThrow(AppOpsManager.OPSTR_GET_USAGE_STATS, android.os.Process.myUid(), packageName)
-        return mode == AppOpsManager.MODE_ALLOWED
-    }
+    private fun hasUsageStatsPermission(): Boolean = PermissionHelper.hasUsageStatsPermission(this)
 
     private fun showColorPicker() {
         val inflater = layoutInflater
@@ -208,7 +286,6 @@ class SettingsActivity : AppCompatActivity() {
         seekGreen.max = 255
         seekBlue.max = 255
 
-        // Initialize sliders and preview
         applyColor(currentColor)
 
         val listener = object : SeekBar.OnSeekBarChangeListener {
@@ -231,18 +308,16 @@ class SettingsActivity : AppCompatActivity() {
         seekGreen.setOnSeekBarChangeListener(listener)
         seekBlue.setOnSeekBarChangeListener(listener)
 
-        // Preset taps
         presetWhite.setOnClickListener { applyColor(Color.WHITE) }
-        presetLightGray.setOnClickListener { applyColor(Color.parseColor("#CCCCCC")) }
-        presetGray.setOnClickListener { applyColor(Color.parseColor("#888888")) }
-        presetAccent.setOnClickListener { applyColor(Color.parseColor("#00BCD4")) }
+        presetLightGray.setOnClickListener { applyColor(android.graphics.Color.parseColor("#CCCCCC")) }
+        presetGray.setOnClickListener { applyColor(android.graphics.Color.parseColor("#888888")) }
+        presetAccent.setOnClickListener { applyColor(android.graphics.Color.parseColor("#00BCD4")) }
 
         androidx.appcompat.app.AlertDialog.Builder(this)
             .setView(view)
             .setPositiveButton("OK") { _, _ ->
                 val color = Color.rgb(r, g, b)
-                currentColor = color
-                binding.etCustomColor.setText(String.format("#%06X", 0xFFFFFF and color))
+                updateColorIndicator(color)
             }
             .setNegativeButton("Cancel", null)
             .show()

@@ -24,6 +24,7 @@ class AppDrawerActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityAppDrawerBinding
     private lateinit var adapter: AppListAdapter
+    private lateinit var appRepository: AppRepository
     private var startY = 0f
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -31,10 +32,10 @@ class AppDrawerActivity : AppCompatActivity() {
         binding = ActivityAppDrawerBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        val cachedApps = PrefsHelper.loadAppCache(this)
+        appRepository = AppRepository(this)
         val textSize = PrefsHelper.loadAppDrawerTextSize(this).toFloat()
         adapter = AppListAdapter(
-            cachedApps,
+            emptyList(),
             textSize,
             onAppClick = { app ->
                 hideKeyboard()
@@ -48,11 +49,18 @@ class AppDrawerActivity : AppCompatActivity() {
         binding.rvApps.layoutManager = LinearLayoutManager(this)
         binding.rvApps.adapter = adapter
 
-        // Background Refresh
-        lifecycleScope.launch(Dispatchers.Default) {
-            val freshApps = loadApps()
+        // Background Load and Refresh
+        lifecycleScope.launch(Dispatchers.IO) {
+            val cachedApps = appRepository.getCachedApps()
+            withContext(Dispatchers.Main) {
+                if (cachedApps.isNotEmpty()) {
+                    adapter.updateList(cachedApps)
+                }
+            }
+
+            val freshApps = appRepository.loadApps(excludeSelf = true)
             if (freshApps != cachedApps) {
-                PrefsHelper.saveAppCache(this@AppDrawerActivity, freshApps)
+                appRepository.saveCache(freshApps)
                 withContext(Dispatchers.Main) {
                     adapter.updateList(freshApps)
                 }
@@ -131,17 +139,5 @@ class AppDrawerActivity : AppCompatActivity() {
         startActivity(intent)
     }
 
-    private fun loadApps(): List<AppInfo> {
-        val pm = packageManager
-        val intent = Intent(Intent.ACTION_MAIN).apply { addCategory(Intent.CATEGORY_LAUNCHER) }
-        return pm.queryIntentActivities(intent, PackageManager.MATCH_ALL)
-            .map { ri ->
-                AppInfo(
-                    label = ri.loadLabel(pm).toString(),
-                    packageName = ri.activityInfo.packageName
-                )
-            }
-            .filter { it.packageName != packageName } // exclude self
-            .sortedBy { it.label.lowercase() }
-    }
+
 }

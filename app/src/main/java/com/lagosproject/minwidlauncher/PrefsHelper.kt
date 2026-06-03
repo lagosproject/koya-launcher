@@ -2,7 +2,6 @@ package com.lagosproject.minwidlauncher
 
 import android.content.Context
 import android.content.SharedPreferences
-import android.appwidget.AppWidgetProviderInfo
 import org.json.JSONArray
 import org.json.JSONObject
 
@@ -11,6 +10,16 @@ object PrefsHelper {
     private const val PREFS_NAME = "minimal_launcher_prefs"
     private const val KEY_WIDGET_ID = "widget_id"
     private const val KEY_WIDGET_PROVIDER = "widget_provider"
+
+    private const val KEY_APP_DRAWER_TEXT_SIZE = "app_drawer_text_size"
+    private const val KEY_HOME_SHORTCUT_TEXT_SIZE = "home_shortcut_text_size"
+    private const val KEY_BATTERY_BAR_VISIBLE = "battery_bar_visible"
+    private const val KEY_WIDGET_HEIGHT_DP = "widget_height_dp"
+    private const val KEY_USE_DEFAULT_COLORS = "use_default_colors"
+    private const val KEY_CUSTOM_TEXT_COLOR = "custom_text_color"
+    private const val KEY_SHOW_USAGE_COUNTER = "show_usage_counter"
+    private const val KEY_SHOW_CALENDAR_EVENTS = "show_calendar_events"
+    private const val KEY_APP_CACHE = "app_cache"
 
     private fun prefs(context: Context): SharedPreferences =
         context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
@@ -50,52 +59,52 @@ object PrefsHelper {
     // ── Layout Settings ───────────────────────────────────────────────────
 
     fun saveAppDrawerTextSize(context: Context, size: Int) =
-        prefs(context).edit().putInt("app_drawer_text_size", size).apply()
+        prefs(context).edit().putInt(KEY_APP_DRAWER_TEXT_SIZE, size).apply()
 
     fun loadAppDrawerTextSize(context: Context): Int =
-        prefs(context).getInt("app_drawer_text_size", 22)
+        prefs(context).getInt(KEY_APP_DRAWER_TEXT_SIZE, 22)
 
     fun saveHomeShortcutTextSize(context: Context, size: Int) =
-        prefs(context).edit().putInt("home_shortcut_text_size", size).apply()
+        prefs(context).edit().putInt(KEY_HOME_SHORTCUT_TEXT_SIZE, size).apply()
 
     fun loadHomeShortcutTextSize(context: Context): Int =
-        prefs(context).getInt("home_shortcut_text_size", 18)
+        prefs(context).getInt(KEY_HOME_SHORTCUT_TEXT_SIZE, 18)
 
     fun saveBatteryBarVisible(context: Context, visible: Boolean) =
-        prefs(context).edit().putBoolean("battery_bar_visible", visible).apply()
+        prefs(context).edit().putBoolean(KEY_BATTERY_BAR_VISIBLE, visible).apply()
 
     fun loadBatteryBarVisible(context: Context): Boolean =
-        prefs(context).getBoolean("battery_bar_visible", true)
+        prefs(context).getBoolean(KEY_BATTERY_BAR_VISIBLE, true)
 
     fun saveWidgetHeight(context: Context, heightInDp: Int) =
-        prefs(context).edit().putInt("widget_height_dp", heightInDp).apply()
+        prefs(context).edit().putInt(KEY_WIDGET_HEIGHT_DP, heightInDp).apply()
 
     fun loadWidgetHeight(context: Context): Int =
-        prefs(context).getInt("widget_height_dp", 350)
+        prefs(context).getInt(KEY_WIDGET_HEIGHT_DP, 350)
 
     fun saveUseDefaultColors(context: Context, useDefault: Boolean) =
-        prefs(context).edit().putBoolean("use_default_colors", useDefault).apply()
+        prefs(context).edit().putBoolean(KEY_USE_DEFAULT_COLORS, useDefault).apply()
 
     fun loadUseDefaultColors(context: Context): Boolean =
-        prefs(context).getBoolean("use_default_colors", true)
+        prefs(context).getBoolean(KEY_USE_DEFAULT_COLORS, true)
 
     fun saveCustomTextColor(context: Context, color: Int) =
-        prefs(context).edit().putInt("custom_text_color", color).apply()
+        prefs(context).edit().putInt(KEY_CUSTOM_TEXT_COLOR, color).apply()
 
     fun loadCustomTextColor(context: Context): Int =
-        prefs(context).getInt("custom_text_color", android.graphics.Color.WHITE)
+        prefs(context).getInt(KEY_CUSTOM_TEXT_COLOR, android.graphics.Color.WHITE)
 
     fun saveShowUsageCounter(context: Context, show: Boolean) =
-        prefs(context).edit().putBoolean("show_usage_counter", show).apply()
+        prefs(context).edit().putBoolean(KEY_SHOW_USAGE_COUNTER, show).apply()
 
     fun loadShowUsageCounter(context: Context): Boolean =
-        prefs(context).getBoolean("show_usage_counter", false)
+        prefs(context).getBoolean(KEY_SHOW_USAGE_COUNTER, false)
 
     fun saveShowCalendarEvents(context: Context, show: Boolean) =
-        prefs(context).edit().putBoolean("show_calendar_events", show).apply()
+        prefs(context).edit().putBoolean(KEY_SHOW_CALENDAR_EVENTS, show).apply()
 
     fun loadShowCalendarEvents(context: Context): Boolean =
-        prefs(context).getBoolean("show_calendar_events", false)
+        prefs(context).getBoolean(KEY_SHOW_CALENDAR_EVENTS, false)
 
     fun saveAppCache(context: Context, apps: List<AppInfo>) {
         val jsonArray = JSONArray()
@@ -105,11 +114,11 @@ object PrefsHelper {
             obj.put("pkg", app.packageName)
             jsonArray.put(obj)
         }
-        prefs(context).edit().putString("app_cache", jsonArray.toString()).apply()
+        prefs(context).edit().putString(KEY_APP_CACHE, jsonArray.toString()).apply()
     }
 
     fun loadAppCache(context: Context): List<AppInfo> {
-        val json = prefs(context).getString("app_cache", null) ?: return emptyList()
+        val json = prefs(context).getString(KEY_APP_CACHE, null) ?: return emptyList()
         val list = mutableListOf<AppInfo>()
         try {
             val jsonArray = JSONArray(json)

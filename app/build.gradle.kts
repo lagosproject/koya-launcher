@@ -9,21 +9,18 @@ android {
     namespace = "com.lagosproject.minwidlauncher"
     compileSdk = 34
 
+    val keystorePropertiesFile = rootProject.file("keystore.properties")
+    val keystoreProperties = Properties()
+    if (keystorePropertiesFile.exists()) {
+        keystoreProperties.load(keystorePropertiesFile.inputStream())
+    }
+
     signingConfigs {
         create("release") {
-            val keystorePropertiesFile = rootProject.file("local.properties")
-            if (keystorePropertiesFile.exists()) {
-                val properties = Properties()
-                properties.load(keystorePropertiesFile.inputStream())
-                
-                val keyFile = properties.getProperty("release.keystore.path")
-                if (keyFile != null) {
-                    storeFile = file(keyFile)
-                    storePassword = properties.getProperty("release.keystore.password")
-                    keyAlias = properties.getProperty("release.key.alias")
-                    keyPassword = properties.getProperty("release.key.password")
-                }
-            }
+            keyAlias = keystoreProperties["keyAlias"] as String?
+            keyPassword = keystoreProperties["keyPassword"] as String?
+            storeFile = (keystoreProperties["storeFile"] as String?)?.let { rootProject.file(it) }
+            storePassword = keystoreProperties["storePassword"] as String?
         }
     }
 

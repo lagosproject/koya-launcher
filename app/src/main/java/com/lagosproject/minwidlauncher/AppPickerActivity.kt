@@ -25,7 +25,7 @@ import kotlinx.coroutines.withContext
  */
 class AppPickerActivity : AppCompatActivity() {
     private lateinit var adapter: AppListAdapter
-    private var cachedApps: List<AppInfo> = emptyList()
+    private lateinit var appRepository: AppRepository
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -36,10 +36,10 @@ class AppPickerActivity : AppCompatActivity() {
         val etSearch = root.findViewById<EditText>(R.id.etSearch)
         val rv = root.findViewById<RecyclerView>(R.id.rvApps)
 
-        cachedApps = PrefsHelper.loadAppCache(this)
+        appRepository = AppRepository(this)
         val textSize = PrefsHelper.loadHomeShortcutTextSize(this).toFloat()
         adapter = AppListAdapter(
-            apps = cachedApps,
+            apps = emptyList(),
             textSize = textSize,
             onAppClick = { app ->
                 val result = Intent().apply {
@@ -63,11 +63,18 @@ class AppPickerActivity : AppCompatActivity() {
         rv.layoutManager = LinearLayoutManager(this)
         rv.adapter = adapter
 
-        // Background Refresh
-        lifecycleScope.launch(Dispatchers.Default) {
-            val freshApps = loadApps()
+        // Background Load and Refresh
+        lifecycleScope.launch(Dispatchers.IO) {
+            val cachedApps = appRepository.getCachedApps()
+            withContext(Dispatchers.Main) {
+                if (cachedApps.isNotEmpty()) {
+                    adapter.updateList(cachedApps)
+                }
+            }
+
+            val freshApps = appRepository.loadApps(excludeSelf = false)
             if (freshApps != cachedApps) {
-                PrefsHelper.saveAppCache(this@AppPickerActivity, freshApps)
+                appRepository.saveCache(freshApps)
                 withContext(Dispatchers.Main) {
                     adapter.updateList(freshApps)
                 }
@@ -81,11 +88,5 @@ class AppPickerActivity : AppCompatActivity() {
         })
     }
 
-    private fun loadApps(): List<AppInfo> {
-        val pm = packageManager
-        val intent = Intent(Intent.ACTION_MAIN).apply { addCategory(Intent.CATEGORY_LAUNCHER) }
-        return pm.queryIntentActivities(intent, PackageManager.MATCH_ALL)
-            .map { ri -> AppInfo(ri.loadLabel(pm).toString(), ri.activityInfo.packageName) }
-            .sortedBy { it.label.lowercase() }
-    }
+
 }

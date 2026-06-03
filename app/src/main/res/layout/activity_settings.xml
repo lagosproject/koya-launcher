@@ -11,15 +11,34 @@
         android:orientation="vertical"
         android:padding="24dp">
 
-        <TextView
-            android:layout_width="wrap_content"
+        <!-- Top Header -->
+        <RelativeLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="@string/settings_title"
-            android:textColor="@color/white"
-            android:textSize="28sp"
-            android:fontFamily="sans-serif-thin"
-            android:letterSpacing="0.2"
-            android:layout_marginBottom="16dp"/>
+            android:layout_marginBottom="24dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentStart="true"
+                android:layout_centerVertical="true"
+                android:text="@string/settings_title"
+                android:textColor="@color/white"
+                android:textSize="28sp"
+                android:fontFamily="sans-serif-thin"
+                android:letterSpacing="0.2" />
+
+            <ImageButton
+                android:id="@+id/btnBack"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:layout_alignParentEnd="true"
+                android:layout_centerVertical="true"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:src="@drawable/ic_close"
+                android:contentDescription="Close settings"
+                app:tint="@color/white"/>
+        </RelativeLayout>
 
         <!-- Layout section -->
         <TextView
@@ -40,57 +59,117 @@
             android:layout_marginBottom="16dp">
 
             <!-- App Drawer Text Size -->
-            <TextView
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="@string/app_drawer_text_size"
-                android:textColor="@color/text_secondary"
-                android:textSize="14sp"
-                android:fontFamily="sans-serif-light"/>
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:layout_marginBottom="8dp">
 
-            <EditText
-                android:id="@+id/etAppDrawerTextSize"
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="@string/app_drawer_text_size"
+                    android:textColor="@color/text_secondary"
+                    android:textSize="14sp"
+                    android:fontFamily="sans-serif-light"/>
+
+                <TextView
+                    android:id="@+id/tvAppDrawerTextSizeVal"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textColor="@color/white"
+                    android:textSize="14sp"
+                    android:fontFamily="sans-serif-medium"
+                    android:text="22sp"/>
+            </LinearLayout>
+
+            <SeekBar
+                android:id="@+id/sbAppDrawerTextSize"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:inputType="number"
-                android:textColor="@color/white"
-                android:backgroundTint="@color/text_dim"
+                android:max="24"
+                android:progress="10"
+                android:thumbTint="@color/white"
+                android:progressTint="@color/white"
+                android:progressBackgroundTint="@color/text_dim"
                 android:layout_marginBottom="16dp"/>
 
             <!-- Home Shortcut Text Size -->
-            <TextView
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="@string/home_shortcut_text_size"
-                android:textColor="@color/text_secondary"
-                android:textSize="14sp"
-                android:fontFamily="sans-serif-light"/>
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:layout_marginBottom="8dp">
 
-            <EditText
-                android:id="@+id/etHomeShortcutTextSize"
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="@string/home_shortcut_text_size"
+                    android:textColor="@color/text_secondary"
+                    android:textSize="14sp"
+                    android:fontFamily="sans-serif-light"/>
+
+                <TextView
+                    android:id="@+id/tvHomeShortcutTextSizeVal"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textColor="@color/white"
+                    android:textSize="14sp"
+                    android:fontFamily="sans-serif-medium"
+                    android:text="18sp"/>
+            </LinearLayout>
+
+            <SeekBar
+                android:id="@+id/sbHomeShortcutTextSize"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:inputType="number"
-                android:textColor="@color/white"
-                android:backgroundTint="@color/text_dim"
+                android:max="24"
+                android:progress="6"
+                android:thumbTint="@color/white"
+                android:progressTint="@color/white"
+                android:progressBackgroundTint="@color/text_dim"
                 android:layout_marginBottom="16dp"/>
 
             <!-- Widget Area Height -->
-            <TextView
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="@string/widget_area_height"
-                android:textColor="@color/text_secondary"
-                android:textSize="14sp"
-                android:fontFamily="sans-serif-light"/>
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:layout_marginBottom="8dp">
 
-            <EditText
-                android:id="@+id/etWidgetHeight"
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="@string/widget_area_height"
+                    android:textColor="@color/text_secondary"
+                    android:textSize="14sp"
+                    android:fontFamily="sans-serif-light"/>
+
+                <TextView
+                    android:id="@+id/tvWidgetHeightVal"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textColor="@color/white"
+                    android:textSize="14sp"
+                    android:fontFamily="sans-serif-medium"
+                    android:text="350dp"/>
+            </LinearLayout>
+
+            <SeekBar
+                android:id="@+id/sbWidgetHeight"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:inputType="number"
-                android:textColor="@color/white"
-                android:backgroundTint="@color/text_dim"
+                android:max="500"
+                android:progress="250"
+                android:thumbTint="@color/white"
+                android:progressTint="@color/white"
+                android:progressBackgroundTint="@color/text_dim"
                 android:layout_marginBottom="16dp"/>
 
             <!-- Battery Indicator Visibility -->
@@ -161,25 +240,48 @@
                     app:trackTint="@color/text_dim"/>
             </LinearLayout>
 
-            <!-- Custom Text Color -->
-            <TextView
+            <!-- Custom Text Color Picker Row -->
+            <LinearLayout
+                android:id="@+id/rowCustomColor"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="@string/custom_text_color"
-                android:textColor="@color/text_secondary"
-                android:textSize="14sp"
-                android:fontFamily="sans-serif-light"/>
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:background="?attr/selectableItemBackground"
+                android:clickable="true"
+                android:focusable="true"
+                android:paddingVertical="8dp">
 
-            <EditText
-                android:id="@+id/etCustomColor"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:inputType="text"
-                android:textColor="@color/white"
-                android:backgroundTint="@color/text_dim"
-                android:focusable="false"
-                android:focusableInTouchMode="false"
-                android:clickable="true"/>
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Custom Text Color"
+                        android:textColor="@color/white"
+                        android:textSize="16sp"
+                        android:fontFamily="sans-serif-light"/>
+
+                    <TextView
+                        android:id="@+id/tvCustomColorHex"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="#FFFFFF"
+                        android:textColor="@color/text_secondary"
+                        android:textSize="12sp"
+                        android:fontFamily="sans-serif-medium"/>
+                </LinearLayout>
+
+                <View
+                    android:id="@+id/viewColorIndicator"
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:layout_marginEnd="8dp"/>
+            </LinearLayout>
         </LinearLayout>
 
         <!-- Usage & Events section -->
@@ -332,17 +434,7 @@
             android:backgroundTint="@color/text_secondary"
             android:fontFamily="sans-serif-medium"
             android:letterSpacing="0.1"
-            android:layout_marginBottom="16dp"/>
-
-        <Button
-            android:id="@+id/btnSave"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="@string/save_changes"
-            android:textColor="@color/black"
-            android:backgroundTint="@color/white"
-            android:fontFamily="sans-serif-medium"
-            android:letterSpacing="0.1"/>
+            android:layout_marginBottom="24dp"/>
 
     </LinearLayout>
 </androidx.core.widget.NestedScrollView>
