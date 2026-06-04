@@ -1,10 +1,10 @@
-# MinWid Launcher
+# Koya Launcher
 
-<a href="https://github.com/lagosproject/minwid-launcher/actions"><img src="https://github.com/lagosproject/minwid-launcher/actions/workflows/ci.yml/badge.svg" alt="Android Build" /></a>
+<a href="https://github.com/lagosproject/koya-launcher/actions"><img src="https://github.com/lagosproject/koya-launcher/actions/workflows/ci.yml/badge.svg" alt="Android Build" /></a>
 <a href="#license"><img src="https://img.shields.io/badge/License-Pending-lightgrey.svg" alt="License: Proprietary" /></a>
 <a href="https://kotlinlang.org/"><img src="https://img.shields.io/badge/Kotlin-1.9.0-purple.svg" alt="Kotlin" /></a>
 
-MinWid Launcher is a distraction-free, minimalist Android home launcher designed to help you regain focus while still allowing you to access a single, essential widget at the top of your screen.
+Koya Launcher is a distraction-free, minimalist Android home launcher designed to help you regain focus while still allowing you to access a single, essential widget at the top of your screen.
 
 ---
 
@@ -20,7 +20,7 @@ MinWid Launcher is a distraction-free, minimalist Android home launcher designed
 ---
 
 ## About the Project
-Modern smartphones are packed with widgets, badges, and notification lists that constantly compete for your attention. MinWid Launcher simplifies your screen down to:
+Modern smartphones are packed with widgets, badges, and notification lists that constantly compete for your attention. Koya Launcher simplifies your screen down to:
 - A clean time & date header.
 - A single widget slot (long press to add).
 - An optional battery level bar.
@@ -49,8 +49,8 @@ Modern smartphones are packed with widgets, badges, and notification lists that 
 
 1. **Clone the repository:**
    ```bash
-   git clone https://github.com/lagosproject/minwid-launcher.git
-   cd minwid-launcher
+   git clone https://github.com/lagosproject/koya-launcher.git
+   cd koya-launcher
    ```
 
 2. **Open the project in Android Studio.**

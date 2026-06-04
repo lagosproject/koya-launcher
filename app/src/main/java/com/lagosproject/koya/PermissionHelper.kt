@@ -1,4 +1,4 @@
-package com.lagosproject.minwidlauncher
+package com.lagosproject.koya
 
 import android.app.AppOpsManager
 import android.content.Context

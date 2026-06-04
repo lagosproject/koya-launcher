@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <!-- Base Strings -->
-    <string name="app_name">MinWid</string>
+    <string name="app_name">Koya</string>
     <string name="widget_hint">appui long pour ajouter un widget</string>
     <string name="empty_shortcut">+</string>
     <string name="search_hint">rechercher des applications…</string>

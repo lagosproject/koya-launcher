@@ -6,7 +6,7 @@ plugins {
 }
 
 android {
-    namespace = "com.lagosproject.minwidlauncher"
+    namespace = "com.lagosproject.koya"
     compileSdk = 34
 
     val keystorePropertiesFile = rootProject.file("keystore.properties")
@@ -25,7 +25,7 @@ android {
     }
 
     defaultConfig {
-        applicationId = "com.lagosproject.minwidlauncher"
+        applicationId = "com.lagosproject.koya"
         minSdk = 26
         targetSdk = 34
         versionCode = 1

@@ -1,4 +1,4 @@
-# Contributing to MinWid Launcher
+# Contributing to Koya Launcher
 
 We welcome contributions from the community! To contribute, please follow these guidelines:
 

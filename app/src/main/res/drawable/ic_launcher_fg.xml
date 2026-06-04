@@ -4,22 +4,18 @@
     android:height="108dp"
     android:viewportWidth="108"
     android:viewportHeight="108">
-    <!-- Minimalist clock hands on transparent bg -->
-    <path
-        android:strokeColor="#FFFFFF"
-        android:strokeWidth="3"
-        android:strokeLineCap="round"
-        android:fillColor="@android:color/transparent"
-        android:pathData="M54,54 L54,34"/>
-    <path
-        android:strokeColor="#FFFFFF"
-        android:strokeWidth="3"
-        android:strokeLineCap="round"
-        android:fillColor="@android:color/transparent"
-        android:pathData="M54,54 L68,62"/>
-    <path
-        android:strokeColor="#FFFFFF"
-        android:strokeWidth="2.5"
-        android:fillColor="@android:color/transparent"
-        android:pathData="M54,20 A34,34 0 1,1 53.99,20"/>
+    <group
+        android:scaleX="0.5589675"
+        android:scaleY="0.5589675"
+        android:translateX="133.07436"
+        android:translateY="-123.70014">
+        <!-- Main 'K' cabin structure -->
+        <path
+            android:fillColor="#343432"
+            android:pathData="m -194.3809,253.50184 v 128.80867 h 12.47624 v -36.73367 l 40.40787,-39.8539 40.44714,39.89266 v 36.69491 h 12.476762 v -41.9132 l -44.040202,-43.43559 44.063973,-43.45988 h -17.767393 l -75.58815,74.551 v -74.551 z" />
+        <!-- Rounded square widget representation -->
+        <path
+            android:fillColor="#a76859"
+            android:pathData="M -156.1721243,338.29114 h 29.4487266 a 7.2854557,7.2854557 0 0 1 7.2854557,7.2854557 v 29.4487266 a 7.2854557,7.2854557 0 0 1 -7.2854557,7.2854557 h -29.4487266 a 7.2854557,7.2854557 0 0 1 -7.2854557,-7.2854557 v -29.4487266 a 7.2854557,7.2854557 0 0 1 7.2854557,-7.2854557 z" />
+    </group>
 </vector>

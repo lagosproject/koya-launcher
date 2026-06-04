@@ -1,4 +1,4 @@
-package com.lagosproject.minwidlauncher
+package com.lagosproject.koya
 
 import android.app.Activity
 import android.appwidget.AppWidgetHost
@@ -30,7 +30,7 @@ import android.widget.FrameLayout
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import com.lagosproject.minwidlauncher.databinding.ActivityHomeBinding
+import com.lagosproject.koya.databinding.ActivityHomeBinding
 import androidx.core.graphics.ColorUtils
 import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.Dispatchers

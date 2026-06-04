@@ -2,7 +2,7 @@
 
 ## Reporting a Vulnerability
 
-We take the security of MinWid Launcher seriously. If you find a security vulnerability or have concerns about security practices, please **do not** open a public issue. Instead, report it privately so we can address it securely.
+We take the security of Koya Launcher seriously. If you find a security vulnerability or have concerns about security practices, please **do not** open a public issue. Instead, report it privately so we can address it securely.
 
 Please send your vulnerability reports to:
 * **Email:** security-report@example.com (Please replace this with your actual contact address)

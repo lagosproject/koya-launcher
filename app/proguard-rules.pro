@@ -5,7 +5,7 @@
 # directive in build.gradle.kts.
 
 # Keep ViewBinding classes
--keep class com.lagosproject.minwidlauncher.databinding.** { *; }
+-keep class com.lagosproject.koya.databinding.** { *; }
 
 # Keep AppInfo for JSON serialization
--keep class com.lagosproject.minwidlauncher.AppInfo { *; }
+-keep class com.lagosproject.koya.AppInfo { *; }

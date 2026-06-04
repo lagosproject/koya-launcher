@@ -13,5 +13,5 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "MinimalLauncher"
+rootProject.name = "Koya"
 include(":app")

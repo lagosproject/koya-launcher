@@ -1,4 +1,4 @@
-package com.lagosproject.minwidlauncher
+package com.lagosproject.koya
 
 import android.content.Context
 import android.content.SharedPreferences
