@@ -135,4 +135,12 @@ object PrefsHelper {
 
     fun loadScreenshotMode(context: Context): Boolean =
         prefs(context).getBoolean("screenshot_mode", false)
+
+    // ── Tutorial ──────────────────────────────────────────────────────────
+
+    fun saveTutorialShown(context: Context, shown: Boolean) =
+        prefs(context).edit().putBoolean("tutorial_shown", shown).apply()
+
+    fun loadTutorialShown(context: Context): Boolean =
+        prefs(context).getBoolean("tutorial_shown", false)
 }

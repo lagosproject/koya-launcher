@@ -47,4 +47,24 @@
     <string name="color_red">Rojo</string>
     <string name="color_green">Verde</string>
     <string name="color_blue">Azul</string>
+
+    <!-- Wallpaper -->
+    <string name="change_wallpaper">CAMBIAR FONDO DE PANTALLA</string>
+    <string name="wallpaper_chooser_error">No se encontró una app para cambiar el fondo de pantalla</string>
+
+    <!-- Tutorial -->
+    <string name="show_tutorial">MOSTRAR TUTORIAL</string>
+    <string name="tutorial_welcome_title">Bienvenido a Koya</string>
+    <string name="tutorial_welcome_desc">Un launcher minimalista diseñado para mantenerte enfocado.\nAprendamos lo básico.</string>
+    <string name="tutorial_drawer_title">Cajón de aplicaciones</string>
+    <string name="tutorial_drawer_desc">Desliza hacia arriba desde cualquier lugar de la pantalla de inicio para abrir el cajón de aplicaciones.</string>
+    <string name="tutorial_gestures_title">Gestos rápidos</string>
+    <string name="tutorial_gestures_desc">Desliza a la derecha para abrir el Teléfono.\nDesliza a la izquierda para abrir la Cámara.</string>
+    <string name="tutorial_settings_title">Ajustes</string>
+    <string name="tutorial_settings_desc">Mantén presionado en cualquier lugar de la pantalla de inicio para abrir los Ajustes.</string>
+    <string name="tutorial_shortcuts_title">Accesos directos y Widgets</string>
+    <string name="tutorial_shortcuts_desc">Toca los botones + en la parte inferior para añadir tus apps favoritas como accesos directos.\nToca el área de widget para añadir un widget.</string>
+    <string name="tutorial_next">SIGUIENTE</string>
+    <string name="tutorial_back">ATRÁS</string>
+    <string name="tutorial_done">ENTENDIDO</string>
 </resources>

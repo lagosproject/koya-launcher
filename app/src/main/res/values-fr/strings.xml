@@ -47,4 +47,24 @@
     <string name="color_red">Rouge</string>
     <string name="color_green">Vert</string>
     <string name="color_blue">Bleu</string>
+
+    <!-- Wallpaper -->
+    <string name="change_wallpaper">CHANGER LE FOND D\'ÉCRAN</string>
+    <string name="wallpaper_chooser_error">Aucune application de fond d\'écran trouvée</string>
+
+    <!-- Tutorial -->
+    <string name="show_tutorial">AFFICHER LE TUTORIEL</string>
+    <string name="tutorial_welcome_title">Bienvenue sur Koya</string>
+    <string name="tutorial_welcome_desc">Un lanceur minimaliste conçu pour vous garder concentré.\nApprenons les bases.</string>
+    <string name="tutorial_drawer_title">Tiroir d\'applications</string>
+    <string name="tutorial_drawer_desc">Glissez vers le haut depuis n\'importe où sur l\'écran d\'accueil pour ouvrir le tiroir d\'applications.</string>
+    <string name="tutorial_gestures_title">Gestes rapides</string>
+    <string name="tutorial_gestures_desc">Glissez à droite pour ouvrir le Téléphone.\nGlissez à gauche pour ouvrir l\'Appareil photo.</string>
+    <string name="tutorial_settings_title">Paramètres</string>
+    <string name="tutorial_settings_desc">Appui long n\'importe où sur l\'écran d\'accueil pour ouvrir les Paramètres.</string>
+    <string name="tutorial_shortcuts_title">Raccourcis et Widgets</string>
+    <string name="tutorial_shortcuts_desc">Appuyez sur les boutons + en bas pour ajouter vos applications favorites comme raccourcis.\nAppuyez sur la zone widget pour ajouter un widget.</string>
+    <string name="tutorial_next">SUIVANT</string>
+    <string name="tutorial_back">RETOUR</string>
+    <string name="tutorial_done">COMPRIS</string>
 </resources>

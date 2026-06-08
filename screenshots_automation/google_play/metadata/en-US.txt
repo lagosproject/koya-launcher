@@ -1,0 +1,20 @@
+Title: Koya - Minimal Launcher
+========================================
+Short Description:
+A clean, focused launcher featuring a custom widget slot and quick search.
+========================================
+Full Description:
+Koya Launcher is a minimalist, distraction-free Android launcher designed to help you regain focus, reduce screen time, and customize your phone for productivity. 
+
+By replacing your standard home screen with a clean, text-based interface, Koya eliminates visual clutter, notification badges, and the constant urge to mindlessly scroll.
+
+Key Features:
+• Minimalist Home Screen: A clean, distraction-free interface featuring a simple date & time header.
+• Dedicated Widget Slot: Long-press the top section to host your favorite, essential widget (e.g., calendar, task manager, or weather).
+• 4 Custom Text Shortcuts: Pin your four most-used apps at the bottom of the screen as clean text links.
+• Smart App Drawer: Access all your apps instantly. The built-in search features pre-computed diacritical mark normalization for lag-free, instant filtering.
+• Screen Usage & Calendar: Optional integrations to view your screen time and upcoming calendar events directly on the home screen.
+• Battery Indicator: A subtle, clean battery level bar to keep you informed without clutter.
+• Privacy-First: Koya operates entirely offline. It does not require internet permission, meaning your data never leaves your device. No ads, no tracking.
+
+Simplify your Android experience and stay focused on what matters. Download Koya Launcher today!

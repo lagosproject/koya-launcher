@@ -1,0 +1,28 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="80dp"
+    android:height="80dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+  <path
+      android:strokeColor="#40FFFFFF"
+      android:strokeWidth="1.5"
+      android:strokeLineJoin="round"
+      android:pathData="M7,2h10c1.1,0 2,0.9 2,2v16c0,1.1 -0.9,2 -2,2H7c-1.1,0 -2,-0.9 -2,-2V4C5,2.9 5.9,2 7,2z"/>
+  <!-- Plus signs for shortcuts -->
+  <path
+      android:strokeColor="#FFFFFFFF"
+      android:strokeWidth="1.5"
+      android:strokeLineCap="round"
+      android:pathData="M9,15v4 M7,17h4"/>
+  <path
+      android:strokeColor="#80FFFFFF"
+      android:strokeWidth="1.5"
+      android:strokeLineCap="round"
+      android:pathData="M15,15v4 M13,17h4"/>
+  <!-- widget area -->
+  <path
+      android:strokeColor="#40FFFFFF"
+      android:strokeWidth="0.8"
+      android:fillColor="#10FFFFFF"
+      android:pathData="M7.5,7h9v5h-9z"/>
+</vector>

@@ -47,4 +47,24 @@
     <string name="color_red">Red</string>
     <string name="color_green">Green</string>
     <string name="color_blue">Blue</string>
+
+    <!-- Wallpaper -->
+    <string name="change_wallpaper">CHANGE WALLPAPER</string>
+    <string name="wallpaper_chooser_error">No wallpaper chooser app found</string>
+
+    <!-- Tutorial -->
+    <string name="show_tutorial">SHOW TUTORIAL</string>
+    <string name="tutorial_welcome_title">Welcome to Koya</string>
+    <string name="tutorial_welcome_desc">A minimal launcher designed to keep you focused.\nLet\'s learn the basics.</string>
+    <string name="tutorial_drawer_title">App Drawer</string>
+    <string name="tutorial_drawer_desc">Swipe up from anywhere on the home screen to open your app drawer.</string>
+    <string name="tutorial_gestures_title">Quick Gestures</string>
+    <string name="tutorial_gestures_desc">Swipe right to open the Phone.\nSwipe left to open the Camera.</string>
+    <string name="tutorial_settings_title">Settings</string>
+    <string name="tutorial_settings_desc">Long press anywhere on the home screen to open Settings.</string>
+    <string name="tutorial_shortcuts_title">Shortcuts &amp; Widgets</string>
+    <string name="tutorial_shortcuts_desc">Tap the + buttons at the bottom to add your favorite apps as shortcuts.\nTap the widget area to add a widget.</string>
+    <string name="tutorial_next">NEXT</string>
+    <string name="tutorial_back">BACK</string>
+    <string name="tutorial_done">GOT IT</string>
 </resources>

@@ -8,17 +8,23 @@ PORT = 8099
 
 class ConfigHandler(http.server.SimpleHTTPRequestHandler):
     def do_POST(self):
-        if self.path == '/save_config':
+        if self.path in ('/save_config', '/save_config_tablet'):
             content_length = int(self.headers['Content-Length'])
             post_data = self.rfile.read(content_length)
             config = json.loads(post_data.decode('utf-8'))
             
-            # Save to split_config.json
-            config_path = os.path.join(os.path.dirname(__file__), 'split_config.json')
+            # Save to appropriate config file
+            if self.path == '/save_config_tablet':
+                config_file = 'split_config_tablet.json'
+            else:
+                config_file = 'split_config.json'
+            
+            config_path = os.path.join(os.path.dirname(__file__), config_file)
             with open(config_path, 'w') as f:
                 json.dump(config, f, indent=2)
                 
-            print(f"\n[CONFIG SAVED] Custom split points saved: {config}")
+            label = "TABLET" if "tablet" in self.path else "PHONE"
+            print(f"\n[CONFIG SAVED ({label})] Custom split points saved to {config_file}: {config}")
             
             self.send_response(200)
             self.send_header('Content-Type', 'application/json')
@@ -48,7 +54,8 @@ try:
     with socketserver.TCPServer(("", PORT), handler) as httpd:
         print(f"\n============================================================")
         print(f"  Koya Launcher Split Configurator Server Running")
-        print(f"  URL: http://localhost:{PORT}/screenshots_automation/configurator.html")
+        print(f"  Phone:  http://localhost:{PORT}/screenshots_automation/configurator.html")
+        print(f"  Tablet: http://localhost:{PORT}/screenshots_automation/configurator_tablet.html")
         print(f"============================================================\n")
         print("Waiting for configurations...")
         httpd.serve_forever()

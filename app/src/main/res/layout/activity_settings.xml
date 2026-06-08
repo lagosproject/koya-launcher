@@ -480,6 +480,31 @@
                 android:backgroundTint="@color/text_secondary"
                 android:fontFamily="sans-serif-medium"
                 android:letterSpacing="0.1"
+                android:layout_marginBottom="16dp"/>
+
+            <Button
+                android:id="@+id/btnChangeWallpaper"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/change_wallpaper"
+                android:textColor="@color/black"
+                android:backgroundTint="@color/text_secondary"
+                android:fontFamily="sans-serif-medium"
+                android:letterSpacing="0.1"
+                android:drawableStart="@drawable/ic_wallpaper"
+                android:drawableTint="@color/black"
+                android:drawablePadding="8dp"
+                android:layout_marginBottom="16dp"/>
+
+            <Button
+                android:id="@+id/btnShowTutorial"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/show_tutorial"
+                android:textColor="@color/white"
+                android:backgroundTint="#333333"
+                android:fontFamily="sans-serif-medium"
+                android:letterSpacing="0.1"
                 android:layout_marginBottom="24dp"/>
 
         </LinearLayout>

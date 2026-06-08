@@ -1,0 +1,242 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:background="#E6000000"
+    android:padding="24dp">
+
+    <!-- Page indicator dots -->
+    <LinearLayout
+        android:id="@+id/dotsContainer"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginBottom="24dp"/>
+
+    <!-- ViewFlipper for tutorial pages -->
+    <ViewFlipper
+        android:id="@+id/viewFlipper"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:inAnimation="@android:anim/fade_in"
+        android:outAnimation="@android:anim/fade_out">
+
+        <!-- Page 1: Welcome -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:gravity="center_horizontal"
+            android:paddingVertical="16dp">
+
+            <ImageView
+                android:layout_width="80dp"
+                android:layout_height="80dp"
+                android:src="@drawable/ic_tutorial_welcome"
+                android:layout_marginBottom="24dp"
+                android:contentDescription="Welcome icon"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/tutorial_welcome_title"
+                android:textColor="#FFFFFFFF"
+                android:textSize="24sp"
+                android:fontFamily="sans-serif-thin"
+                android:letterSpacing="0.15"
+                android:layout_marginBottom="12dp"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/tutorial_welcome_desc"
+                android:textColor="#CCFFFFFF"
+                android:textSize="15sp"
+                android:fontFamily="sans-serif-light"
+                android:gravity="center"
+                android:lineSpacingMultiplier="1.3"/>
+        </LinearLayout>
+
+        <!-- Page 2: App Drawer (Swipe Up) -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:gravity="center_horizontal"
+            android:paddingVertical="16dp">
+
+            <ImageView
+                android:layout_width="80dp"
+                android:layout_height="80dp"
+                android:src="@drawable/ic_tutorial_drawer"
+                android:layout_marginBottom="24dp"
+                android:contentDescription="Swipe up gesture"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/tutorial_drawer_title"
+                android:textColor="#FFFFFFFF"
+                android:textSize="24sp"
+                android:fontFamily="sans-serif-thin"
+                android:letterSpacing="0.15"
+                android:layout_marginBottom="12dp"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/tutorial_drawer_desc"
+                android:textColor="#CCFFFFFF"
+                android:textSize="15sp"
+                android:fontFamily="sans-serif-light"
+                android:gravity="center"
+                android:lineSpacingMultiplier="1.3"/>
+        </LinearLayout>
+
+        <!-- Page 3: Quick Gestures (Swipe Left/Right) -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:gravity="center_horizontal"
+            android:paddingVertical="16dp">
+
+            <ImageView
+                android:layout_width="80dp"
+                android:layout_height="80dp"
+                android:src="@drawable/ic_tutorial_gestures"
+                android:layout_marginBottom="24dp"
+                android:contentDescription="Swipe gestures"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/tutorial_gestures_title"
+                android:textColor="#FFFFFFFF"
+                android:textSize="24sp"
+                android:fontFamily="sans-serif-thin"
+                android:letterSpacing="0.15"
+                android:layout_marginBottom="12dp"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/tutorial_gestures_desc"
+                android:textColor="#CCFFFFFF"
+                android:textSize="15sp"
+                android:fontFamily="sans-serif-light"
+                android:gravity="center"
+                android:lineSpacingMultiplier="1.3"/>
+        </LinearLayout>
+
+        <!-- Page 4: Settings (Long Press) -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:gravity="center_horizontal"
+            android:paddingVertical="16dp">
+
+            <ImageView
+                android:layout_width="80dp"
+                android:layout_height="80dp"
+                android:src="@drawable/ic_tutorial_settings"
+                android:layout_marginBottom="24dp"
+                android:contentDescription="Long press gesture"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/tutorial_settings_title"
+                android:textColor="#FFFFFFFF"
+                android:textSize="24sp"
+                android:fontFamily="sans-serif-thin"
+                android:letterSpacing="0.15"
+                android:layout_marginBottom="12dp"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/tutorial_settings_desc"
+                android:textColor="#CCFFFFFF"
+                android:textSize="15sp"
+                android:fontFamily="sans-serif-light"
+                android:gravity="center"
+                android:lineSpacingMultiplier="1.3"/>
+        </LinearLayout>
+
+        <!-- Page 5: Shortcuts & Widgets -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:gravity="center_horizontal"
+            android:paddingVertical="16dp">
+
+            <ImageView
+                android:layout_width="80dp"
+                android:layout_height="80dp"
+                android:src="@drawable/ic_tutorial_shortcuts"
+                android:layout_marginBottom="24dp"
+                android:contentDescription="Shortcuts and widgets"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/tutorial_shortcuts_title"
+                android:textColor="#FFFFFFFF"
+                android:textSize="24sp"
+                android:fontFamily="sans-serif-thin"
+                android:letterSpacing="0.15"
+                android:layout_marginBottom="12dp"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/tutorial_shortcuts_desc"
+                android:textColor="#CCFFFFFF"
+                android:textSize="15sp"
+                android:fontFamily="sans-serif-light"
+                android:gravity="center"
+                android:lineSpacingMultiplier="1.3"/>
+        </LinearLayout>
+
+    </ViewFlipper>
+
+    <!-- Navigation buttons -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center"
+        android:layout_marginTop="24dp">
+
+        <Button
+            android:id="@+id/btnTutorialBack"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="@string/tutorial_back"
+            android:textColor="#80FFFFFF"
+            android:backgroundTint="#1AFFFFFF"
+            android:fontFamily="sans-serif-medium"
+            android:letterSpacing="0.1"
+            android:visibility="gone"
+            android:layout_marginEnd="8dp"/>
+
+        <Button
+            android:id="@+id/btnTutorialNext"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="@string/tutorial_next"
+            android:textColor="@color/black"
+            android:backgroundTint="@color/white"
+            android:fontFamily="sans-serif-medium"
+            android:letterSpacing="0.1"
+            android:layout_marginStart="8dp"/>
+    </LinearLayout>
+
+</LinearLayout>

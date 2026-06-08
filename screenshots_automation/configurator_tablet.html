@@ -1,0 +1,717 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Koya Launcher — Tablet Widget Split Configurator</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=JetBrains+Mono&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #12100e;
+            --surface: #1c1816;
+            --accent: #5b8a72;
+            --accent-glow: rgba(91, 138, 114, 0.15);
+            --text: #f5f5f4;
+            --text-muted: #a8a29e;
+            --border: #2e2926;
+            --white: #ffffff;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text);
+            font-family: 'Outfit', sans-serif;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 2rem;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 2rem;
+            max-width: 600px;
+        }
+
+        h1 {
+            font-size: 2.2rem;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            margin-bottom: 0.5rem;
+            background: linear-gradient(135deg, var(--white), var(--accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .badge {
+            display: inline-block;
+            background: var(--accent);
+            color: var(--bg);
+            font-size: 0.75rem;
+            font-weight: 600;
+            padding: 3px 10px;
+            border-radius: 8px;
+            letter-spacing: 1px;
+            margin-bottom: 0.5rem;
+        }
+
+        p.subtitle {
+            color: var(--text-muted);
+            font-size: 1.1rem;
+            font-weight: 300;
+        }
+
+        .container {
+            display: grid;
+            grid-template-columns: 1fr 400px;
+            gap: 2.5rem;
+            max-width: 1200px;
+            width: 100%;
+            background-color: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 24px;
+            padding: 2.5rem;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+        }
+
+        .preview-pane {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        /* Tablet Frame — taller than phone to show 1080x2412 content */
+        .tablet-frame {
+            width: 361px; /* 345 + 16 */
+            height: 806px; /* 770 + 36 to match aspect ratio 1080:2412 */
+            background-color: #000;
+            border-radius: 28px;
+            border: 8px solid #2a2421;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.8);
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Interactive Canvas overlays */
+        #main-canvas {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
+        .interactive-overlay {
+            position: absolute;
+            border: 2px dashed rgba(255, 255, 255, 0.3);
+            pointer-events: auto;
+        }
+
+        .handle {
+            width: 20px;
+            height: 20px;
+            background-color: var(--accent);
+            border: 3px solid var(--white);
+            border-radius: 50%;
+            position: absolute;
+            cursor: pointer;
+            transform: translate(-50%, -50%);
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+            transition: transform 0.1s ease, background-color 0.2s;
+            touch-action: none;
+            pointer-events: auto;
+        }
+
+        .handle:hover {
+            transform: translate(-50%, -50%) scale(1.3);
+            background-color: var(--white);
+        }
+
+        .handle.active {
+            transform: translate(-50%, -50%) scale(1.4);
+            background-color: #88c4a4;
+        }
+
+        .control-pane {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        label {
+            font-weight: 600;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-muted);
+        }
+
+        select, button {
+            background-color: #26211e;
+            border: 1px solid var(--border);
+            color: var(--text);
+            padding: 0.8rem 1.2rem;
+            border-radius: 12px;
+            font-family: inherit;
+            font-size: 1rem;
+            outline: none;
+            transition: all 0.2s;
+        }
+
+        select:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px var(--accent-glow);
+        }
+
+        button.primary {
+            background-color: var(--accent);
+            border-color: var(--accent);
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 1rem;
+        }
+
+        button.primary:hover {
+            background-color: #6fa08a;
+            box-shadow: 0 0 15px var(--accent-glow);
+        }
+
+        .coords-display {
+            background-color: #141210;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1rem;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.85rem;
+            line-height: 1.5;
+        }
+
+        .coords-display span {
+            color: var(--accent);
+        }
+
+        .help-box {
+            background-color: rgba(91, 138, 114, 0.05);
+            border: 1px dashed var(--accent);
+            border-radius: 16px;
+            padding: 1.2rem;
+            font-size: 0.9rem;
+            line-height: 1.6;
+            font-weight: 300;
+        }
+
+        .help-box strong {
+            font-weight: 600;
+            color: var(--accent);
+        }
+
+        .status-toast {
+            padding: 1rem;
+            border-radius: 12px;
+            font-size: 0.95rem;
+            font-weight: 500;
+            text-align: center;
+            transition: all 0.3s ease;
+            margin-top: 0.5rem;
+        }
+
+        .status-toast.success {
+            background-color: rgba(74, 222, 128, 0.1);
+            border: 1px solid rgba(74, 222, 128, 0.3);
+            color: #4ade80;
+        }
+
+        .status-toast.error {
+            background-color: rgba(248, 113, 113, 0.1);
+            border: 1px solid rgba(248, 113, 113, 0.3);
+            color: #f87171;
+        }
+
+        input[type="range"] {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 100%;
+            height: 6px;
+            background: #26211e;
+            border-radius: 3px;
+            outline: none;
+            margin: 8px 0;
+        }
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: var(--accent);
+            cursor: pointer;
+            transition: transform 0.1s;
+        }
+        input[type="range"]::-webkit-slider-thumb:hover {
+            transform: scale(1.2);
+        }
+        .widget-controls-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            background-color: #141210;
+            padding: 1rem;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            margin-top: 0.5rem;
+        }
+        .widget-control-item {
+            display: flex;
+            flex-direction: column;
+            gap: 0.2rem;
+        }
+        .widget-control-item label {
+            font-size: 0.75rem !important;
+            margin-bottom: 0px;
+        }
+        .widget-control-item span {
+            color: var(--accent);
+            font-weight: 600;
+            font-size: 0.85rem;
+            margin-top: 2px;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="badge">TABLET</div>
+        <h1>Widget Split Configurator</h1>
+        <p class="subtitle">Configure the widget split line for tablet screenshots (1080×2412).</p>
+    </header>
+
+    <div class="container">
+        <div class="preview-pane">
+            <div class="tablet-frame" id="tablet-frame">
+                <canvas id="main-canvas" width="1080" height="2412"></canvas>
+                <div class="interactive-overlay" id="overlay">
+                    <div class="handle" id="handle1"></div>
+                    <div class="handle" id="handle2"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="control-pane">
+            <div class="control-group">
+                <label for="lang-select">Language / Locale</label>
+                <select id="lang-select">
+                    <option value="en-US">English (en-US)</option>
+                    <option value="es-ES">Spanish (es-ES)</option>
+                    <option value="fr-FR">French (fr-FR)</option>
+                </select>
+            </div>
+
+            <div class="control-group">
+                <label>Widget Area Position & Size</label>
+                <div class="widget-controls-grid">
+                    <div class="widget-control-item">
+                        <label>X Offset</label>
+                        <input type="range" id="widget-x" min="0" max="500" value="26">
+                        <span id="widget-x-val">26px</span>
+                    </div>
+                    <div class="widget-control-item">
+                        <label>Y Offset</label>
+                        <input type="range" id="widget-y" min="0" max="2000" value="318">
+                        <span id="widget-y-val">318px</span>
+                    </div>
+                    <div class="widget-control-item">
+                        <label>Width</label>
+                        <input type="range" id="widget-w" min="100" max="1080" value="523">
+                        <span id="widget-w-val">523px</span>
+                    </div>
+                    <div class="widget-control-item">
+                        <label>Height</label>
+                        <input type="range" id="widget-h" min="100" max="2412" value="477">
+                        <span id="widget-h-val">477px</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="control-group" style="display: flex; align-items: center; gap: 0.5rem; margin-top: 1rem;">
+                <input type="checkbox" id="show-labels-check" checked style="width: auto; margin: 0; cursor: pointer;">
+                <label for="show-labels-check" style="margin-bottom: 0; cursor: pointer; font-weight: 500; font-size: 0.9rem;">Show widget labels on screenshot</label>
+            </div>
+
+            <div class="control-group">
+                <label>Current Split Line Coordinates</label>
+                <div class="coords-display" id="coords">
+                    // Drag the handles to see coordinates
+                </div>
+            </div>
+
+            <button class="primary" id="save-btn">Save Tablet Configuration</button>
+            <div id="status-toast" class="status-toast" style="display: none;"></div>
+
+            <div class="help-box">
+                <strong>Instructions:</strong><br>
+                1. Select the language to preview.<br>
+                2. Drag the handles on the tablet screen to customize the diagonal dividing line.<br>
+                3. Click <strong>Save Tablet Configuration</strong> to apply the values.<br>
+                <br>
+                <strong>Note:</strong> This saves to <code>split_config_tablet.json</code>, separate from the phone config. The tablet prep script reads this file for showcase generation.
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Constants matching tablet screenshot dimensions (1080x2412)
+        const CANVAS_W = 1080;
+        const CANVAS_H = 2412;
+
+        // Widget area defaults (will be updated from config)
+        let WIDGET_W = 523;
+        let WIDGET_H = 477;
+        let X_OFFSET = 26;
+        let Y_OFFSET = 318;
+        
+        // Scaled bounds of overlay element relative to its container
+        const overlay = document.getElementById('overlay');
+        const canvas = document.getElementById('main-canvas');
+        const ctx = canvas.getContext('2d');
+        const frame = document.getElementById('tablet-frame');
+        
+        let img1 = new Image();
+        let img2 = new Image();
+        
+        // Normalized coordinates relative to the widget area
+        let p1 = { x: 0, y: WIDGET_H };
+        let p2 = { x: WIDGET_W, y: 0 };
+        
+        let activeHandle = null;
+        
+        // Handle elements
+        const h1 = document.getElementById('handle1');
+        const h2 = document.getElementById('handle2');
+
+        // Compute scale from canvas to frame
+        function getScale() {
+            return frame.clientWidth / CANVAS_W;
+        }
+
+        // Set up handle UI position update
+        function updateHandleUI() {
+            const ow = overlay.clientWidth;
+            const oh = overlay.clientHeight;
+            
+            h1.style.left = `${(p1.x / WIDGET_W) * ow}px`;
+            h1.style.top = `${(p1.y / WIDGET_H) * oh}px`;
+            
+            h2.style.left = `${(p2.x / WIDGET_W) * ow}px`;
+            h2.style.top = `${(p2.y / WIDGET_H) * oh}px`;
+            
+            // Print coordinates
+            document.getElementById('coords').innerHTML = 
+                `{\n  <span>"p1"</span>: [${Math.round(p1.x)}, ${Math.round(p1.y)}],\n  <span>"p2"</span>: [${Math.round(p2.x)}, ${Math.round(p2.y)}]\n}`;
+        }
+
+        // Draw composite image on canvas
+        function drawComposite() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // Draw screenshot 1 as background
+            if (img1.complete) {
+                ctx.drawImage(img1, 0, 0);
+            }
+            
+            if (!img2.complete) return;
+            
+            // Overlay screenshot 2 in the widget area using the diagonal split
+            ctx.save();
+            ctx.beginPath();
+            
+            function getDist(p) {
+                if (p.y === 0) return p.x;
+                if (p.x === WIDGET_W) return WIDGET_W + p.y;
+                if (p.y === WIDGET_H) return WIDGET_W + WIDGET_H + (WIDGET_W - p.x);
+                if (p.x === 0) return WIDGET_W + WIDGET_H + WIDGET_W + (WIDGET_H - p.y);
+                return 0;
+            }
+
+            let d1 = getDist(p1);
+            let d2 = getDist(p2);
+            
+            let pts = [];
+            if (d1 < d2) {
+                pts.push(p1);
+                const corners = [
+                    { x: WIDGET_W, y: 0, d: WIDGET_W },
+                    { x: WIDGET_W, y: WIDGET_H, d: WIDGET_W + WIDGET_H },
+                    { x: 0, y: WIDGET_H, d: WIDGET_W + WIDGET_H + WIDGET_W },
+                    { x: 0, y: 0, d: WIDGET_W + WIDGET_H + WIDGET_W + WIDGET_H }
+                ];
+                corners.forEach(c => {
+                    if (c.d > d1 && c.d < d2) pts.push(c);
+                });
+                pts.push(p2);
+            } else {
+                pts.push(p2);
+                const corners = [
+                    { x: WIDGET_W, y: 0, d: WIDGET_W },
+                    { x: WIDGET_W, y: WIDGET_H, d: WIDGET_W + WIDGET_H },
+                    { x: 0, y: WIDGET_H, d: WIDGET_W + WIDGET_H + WIDGET_W },
+                    { x: 0, y: 0, d: WIDGET_W + WIDGET_H + WIDGET_W + WIDGET_H }
+                ];
+                corners.forEach(c => {
+                    if (c.d > d2 && c.d < d1) pts.push(c);
+                });
+                pts.push(p1);
+            }
+            
+            // Map widget coordinates to full canvas coordinates
+            ctx.moveTo(X_OFFSET + pts[0].x, Y_OFFSET + pts[0].y);
+            for (let i = 1; i < pts.length; i++) {
+                ctx.lineTo(X_OFFSET + pts[i].x, Y_OFFSET + pts[i].y);
+            }
+            ctx.closePath();
+            ctx.clip();
+            
+            // Draw image 2 masked
+            ctx.drawImage(img2, 0, 0);
+            ctx.restore();
+            
+            // Draw split division line
+            ctx.beginPath();
+            ctx.moveTo(X_OFFSET + p1.x, Y_OFFSET + p1.y);
+            ctx.lineTo(X_OFFSET + p2.x, Y_OFFSET + p2.y);
+            ctx.strokeStyle = '#ffffff';
+            ctx.lineWidth = 3;
+            ctx.stroke();
+        }
+
+        // Drag handle events
+        function initDrag(handleId, point) {
+            const h = document.getElementById(handleId);
+            
+            function onPointerMove(e) {
+                const rect = overlay.getBoundingClientRect();
+                let mouseX = e.clientX - rect.left;
+                let mouseY = e.clientY - rect.top;
+                
+                // Constrain point to perimeter
+                let leftDist = mouseX;
+                let rightDist = rect.width - mouseX;
+                let topDist = mouseY;
+                let bottomDist = rect.height - mouseY;
+                
+                let min = Math.min(leftDist, rightDist, topDist, bottomDist);
+                
+                if (min === leftDist) {
+                    point.x = 0;
+                    point.y = Math.max(0, Math.min(WIDGET_H, (mouseY / rect.height) * WIDGET_H));
+                } else if (min === rightDist) {
+                    point.x = WIDGET_W;
+                    point.y = Math.max(0, Math.min(WIDGET_H, (mouseY / rect.height) * WIDGET_H));
+                } else if (min === topDist) {
+                    point.x = Math.max(0, Math.min(WIDGET_W, (mouseX / rect.width) * WIDGET_W));
+                    point.y = 0;
+                } else {
+                    point.x = Math.max(0, Math.min(WIDGET_W, (mouseX / rect.width) * WIDGET_W));
+                    point.y = WIDGET_H;
+                }
+                
+                updateHandleUI();
+                drawComposite();
+            }
+            
+            function onPointerUp() {
+                h.classList.remove('active');
+                window.removeEventListener('pointermove', onPointerMove);
+                window.removeEventListener('pointerup', onPointerUp);
+            }
+            
+            h.addEventListener('pointerdown', (e) => {
+                e.preventDefault();
+                h.classList.add('active');
+                window.addEventListener('pointermove', onPointerMove);
+                window.addEventListener('pointerup', onPointerUp);
+            });
+        }
+
+        // Load tablet screenshots
+        function loadScreenshots(lang) {
+            img1.src = `/screenshots_automation/screenshots_tablet/${lang}/home_screenshot.png`;
+            img2.src = `/screenshots_automation/screenshots_tablet/${lang}/home_widget2_screenshot.png`;
+        }
+
+        img1.onload = () => drawComposite();
+        img2.onload = () => drawComposite();
+
+        document.getElementById('lang-select').addEventListener('change', (e) => {
+            loadScreenshots(e.target.value);
+        });
+
+        // Update overlay position & size from sliders
+        function updateOverlayCSS() {
+            const scale = getScale();
+            overlay.style.left = `${X_OFFSET * scale}px`;
+            overlay.style.top = `${Y_OFFSET * scale}px`;
+            overlay.style.width = `${WIDGET_W * scale}px`;
+            overlay.style.height = `${WIDGET_H * scale}px`;
+        }
+
+        // Load custom split config if available
+        function loadConfig() {
+            fetch('/screenshots_automation/split_config_tablet.json')
+            .then(res => {
+                if (!res.ok) throw new Error('No tablet config file found');
+                return res.json();
+            })
+            .then(config => {
+                if (config.width !== undefined) WIDGET_W = config.width;
+                if (config.height !== undefined) WIDGET_H = config.height;
+                if (config.x_offset !== undefined) X_OFFSET = config.x_offset;
+                if (config.y_offset !== undefined) Y_OFFSET = config.y_offset;
+                
+                if (config.p1 && config.p2) {
+                    p1.x = config.p1[0];
+                    p1.y = config.p1[1];
+                    p2.x = config.p2[0];
+                    p2.y = config.p2[1];
+                }
+                
+                document.getElementById('show-labels-check').checked = config.show_labels !== undefined ? config.show_labels : true;
+                
+                // Update slider values to match
+                document.getElementById('widget-x').value = X_OFFSET;
+                document.getElementById('widget-y').value = Y_OFFSET;
+                document.getElementById('widget-w').value = WIDGET_W;
+                document.getElementById('widget-h').value = WIDGET_H;
+                
+                // Update overlay element styles
+                updateOverlayCSS();
+                
+                // Update values displays
+                document.getElementById('widget-x-val').textContent = X_OFFSET + 'px';
+                document.getElementById('widget-y-val').textContent = Y_OFFSET + 'px';
+                document.getElementById('widget-w-val').textContent = WIDGET_W + 'px';
+                document.getElementById('widget-h-val').textContent = WIDGET_H + 'px';
+                
+                updateHandleUI();
+                drawComposite();
+            })
+            .catch(err => {
+                console.log('Using default split coordinates:', err.message);
+                // Apply default overlay position
+                updateOverlayCSS();
+            });
+        }
+
+        // Display a status message to the user
+        function showStatus(message, isSuccess) {
+            const toast = document.getElementById('status-toast');
+            toast.textContent = message;
+            toast.className = `status-toast ${isSuccess ? 'success' : 'error'}`;
+            toast.style.display = 'block';
+            
+            setTimeout(() => {
+                toast.style.display = 'none';
+            }, 4000);
+        }
+
+        // Initialize drag handles
+        initDrag('handle1', p1);
+        initDrag('handle2', p2);
+
+        // Load defaults
+        loadScreenshots('en-US');
+        loadConfig();
+        updateHandleUI();
+
+        // Listen for layout changes
+        window.addEventListener('resize', () => {
+            updateOverlayCSS();
+            updateHandleUI();
+        });
+
+        function updateWidgetArea() {
+            const oldW = WIDGET_W;
+            const oldH = WIDGET_H;
+            
+            // Normalized percentages of current p1 and p2
+            const p1PctX = p1.x / oldW;
+            const p1PctY = p1.y / oldH;
+            const p2PctX = p2.x / oldW;
+            const p2PctY = p2.y / oldH;
+            
+            X_OFFSET = parseInt(document.getElementById('widget-x').value);
+            Y_OFFSET = parseInt(document.getElementById('widget-y').value);
+            WIDGET_W = parseInt(document.getElementById('widget-w').value);
+            WIDGET_H = parseInt(document.getElementById('widget-h').value);
+            
+            // Update labels
+            document.getElementById('widget-x-val').textContent = X_OFFSET + 'px';
+            document.getElementById('widget-y-val').textContent = Y_OFFSET + 'px';
+            document.getElementById('widget-w-val').textContent = WIDGET_W + 'px';
+            document.getElementById('widget-h-val').textContent = WIDGET_H + 'px';
+            
+            // Re-scale p1 and p2
+            p1.x = p1PctX * WIDGET_W;
+            p1.y = p1PctY * WIDGET_H;
+            p2.x = p2PctX * WIDGET_W;
+            p2.y = p2PctY * WIDGET_H;
+            
+            // Update overlay DOM CSS
+            updateOverlayCSS();
+            
+            updateHandleUI();
+            drawComposite();
+        }
+
+        document.getElementById('widget-x').addEventListener('input', updateWidgetArea);
+        document.getElementById('widget-y').addEventListener('input', updateWidgetArea);
+        document.getElementById('widget-w').addEventListener('input', updateWidgetArea);
+        document.getElementById('widget-h').addEventListener('input', updateWidgetArea);
+        
+        // Save config to server (tablet endpoint)
+        document.getElementById('save-btn').addEventListener('click', () => {
+            const config = {
+                p1: [Math.round(p1.x), Math.round(p1.y)],
+                p2: [Math.round(p2.x), Math.round(p2.y)],
+                x_offset: X_OFFSET,
+                y_offset: Y_OFFSET,
+                width: WIDGET_W,
+                height: WIDGET_H,
+                show_labels: document.getElementById('show-labels-check').checked
+            };
+            
+            fetch('/save_config_tablet', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(config)
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    showStatus('Tablet configuration saved successfully to split_config_tablet.json!', true);
+                } else {
+                    showStatus('Failed to save tablet configuration.', false);
+                }
+            })
+            .catch(err => {
+                console.error(err);
+                showStatus('Connection to Configurator Server failed. Make sure config_server.py is running!', false);
+            });
+        });
+    </script>
+</body>
+</html>

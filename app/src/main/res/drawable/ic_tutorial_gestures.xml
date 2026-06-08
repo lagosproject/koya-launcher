@@ -1,0 +1,25 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="80dp"
+    android:height="80dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+  <path
+      android:strokeColor="#40FFFFFF"
+      android:strokeWidth="1.5"
+      android:strokeLineJoin="round"
+      android:pathData="M7,2h10c1.1,0 2,0.9 2,2v16c0,1.1 -0.9,2 -2,2H7c-1.1,0 -2,-0.9 -2,-2V4C5,2.9 5.9,2 7,2z"/>
+  <!-- Left arrow (camera) -->
+  <path
+      android:strokeColor="#FFFFFFFF"
+      android:strokeWidth="1.8"
+      android:strokeLineCap="round"
+      android:strokeLineJoin="round"
+      android:pathData="M14,12H7 M10,9l-3,3 3,3"/>
+  <!-- Right arrow (phone) -->
+  <path
+      android:strokeColor="#80FFFFFF"
+      android:strokeWidth="1.8"
+      android:strokeLineCap="round"
+      android:strokeLineJoin="round"
+      android:pathData="M10,12h7 M14,9l3,3 -3,3"/>
+</vector>

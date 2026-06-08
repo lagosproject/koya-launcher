@@ -39,6 +39,8 @@ import kotlinx.coroutines.withContext
 import java.text.SimpleDateFormat
 import java.util.*
 import kotlin.math.abs
+import android.widget.Button
+import android.widget.ViewFlipper
 
 class HomeActivity : AppCompatActivity() {
 
@@ -201,6 +203,12 @@ class HomeActivity : AppCompatActivity() {
         setupShortcuts()
         setupGestureDetector()
         setupWidgetArea()
+
+        // Show tutorial on first launch (skip if in screenshot mode)
+        if (!PrefsHelper.loadTutorialShown(this) && !PrefsHelper.loadScreenshotMode(this)) {
+            showTutorialDialog()
+            PrefsHelper.saveTutorialShown(this, true)
+        }
     }
 
     override fun onNewIntent(intent: Intent) {
@@ -751,5 +759,76 @@ class HomeActivity : AppCompatActivity() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O_MR1) {
             unregisterWallpaperColorListener()
         }
+    }
+
+    // ── Tutorial Dialog ──────────────────────────────────────────────────
+
+    private fun showTutorialDialog() {
+        val inflater = layoutInflater
+        val view = inflater.inflate(R.layout.dialog_tutorial, null)
+
+        val viewFlipper = view.findViewById<ViewFlipper>(R.id.viewFlipper)
+        val dotsContainer = view.findViewById<android.widget.LinearLayout>(R.id.dotsContainer)
+        val btnBack = view.findViewById<Button>(R.id.btnTutorialBack)
+        val btnNext = view.findViewById<Button>(R.id.btnTutorialNext)
+
+        val pageCount = viewFlipper.childCount
+        val dots = mutableListOf<View>()
+
+        // Create dot indicators
+        for (i in 0 until pageCount) {
+            val dot = View(this).apply {
+                val size = (8 * resources.displayMetrics.density).toInt()
+                val margin = (4 * resources.displayMetrics.density).toInt()
+                layoutParams = android.widget.LinearLayout.LayoutParams(size, size).apply {
+                    setMargins(margin, 0, margin, 0)
+                }
+                val drawable = android.graphics.drawable.GradientDrawable().apply {
+                    shape = android.graphics.drawable.GradientDrawable.OVAL
+                    setColor(if (i == 0) Color.WHITE else Color.parseColor("#40FFFFFF"))
+                }
+                background = drawable
+            }
+            dots.add(dot)
+            dotsContainer.addView(dot)
+        }
+
+        fun updatePage(position: Int) {
+            dots.forEachIndexed { index, dot ->
+                val drawable = android.graphics.drawable.GradientDrawable().apply {
+                    shape = android.graphics.drawable.GradientDrawable.OVAL
+                    setColor(if (index == position) Color.WHITE else Color.parseColor("#40FFFFFF"))
+                }
+                dot.background = drawable
+            }
+            btnBack.visibility = if (position > 0) View.VISIBLE else View.GONE
+            btnNext.text = if (position == pageCount - 1) getString(R.string.tutorial_done) else getString(R.string.tutorial_next)
+        }
+
+        val dialog = androidx.appcompat.app.AlertDialog.Builder(this, android.R.style.Theme_DeviceDefault_Dialog_NoActionBar)
+            .setView(view)
+            .setCancelable(true)
+            .create()
+
+        dialog.window?.setBackgroundDrawableResource(android.R.color.transparent)
+
+        btnNext.setOnClickListener {
+            if (viewFlipper.displayedChild < pageCount - 1) {
+                viewFlipper.showNext()
+                updatePage(viewFlipper.displayedChild)
+            } else {
+                dialog.dismiss()
+            }
+        }
+
+        btnBack.setOnClickListener {
+            if (viewFlipper.displayedChild > 0) {
+                viewFlipper.showPrevious()
+                updatePage(viewFlipper.displayedChild)
+            }
+        }
+
+        updatePage(0)
+        dialog.show()
     }
 }

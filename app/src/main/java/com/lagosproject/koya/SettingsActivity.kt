@@ -6,9 +6,13 @@ import android.graphics.Color
 import android.graphics.drawable.GradientDrawable
 import android.os.Bundle
 import android.view.View
+import android.widget.Button
+import android.widget.ImageView
+import android.widget.LinearLayout
 import android.widget.SeekBar
 import android.widget.TextView
 import android.widget.Toast
+import android.widget.ViewFlipper
 import androidx.appcompat.app.AppCompatActivity
 import com.lagosproject.koya.databinding.ActivitySettingsBinding
 
@@ -155,6 +159,14 @@ class SettingsActivity : AppCompatActivity() {
             openDefaultLauncherSettings()
         }
 
+        binding.btnChangeWallpaper.setOnClickListener {
+            openWallpaperChooser()
+        }
+
+        binding.btnShowTutorial.setOnClickListener {
+            showTutorialDialog()
+        }
+
         // Header back button
         binding.btnBack.setOnClickListener {
             finish()
@@ -212,6 +224,92 @@ class SettingsActivity : AppCompatActivity() {
             val fallback = Intent(android.provider.Settings.ACTION_SETTINGS)
             startActivity(fallback)
         }
+    }
+
+    private fun openWallpaperChooser() {
+        try {
+            val intent = Intent(Intent.ACTION_SET_WALLPAPER)
+            startActivity(Intent.createChooser(intent, getString(R.string.change_wallpaper)))
+        } catch (e: Exception) {
+            try {
+                // Fallback: try opening the wallpaper picker directly
+                val fallback = Intent("android.service.wallpaper.CROP_AND_SET_WALLPAPER")
+                startActivity(fallback)
+            } catch (e2: Exception) {
+                Toast.makeText(this, getString(R.string.wallpaper_chooser_error), Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+
+    private fun showTutorialDialog() {
+        val inflater = layoutInflater
+        val view = inflater.inflate(R.layout.dialog_tutorial, null)
+
+        val viewFlipper = view.findViewById<ViewFlipper>(R.id.viewFlipper)
+        val dotsContainer = view.findViewById<LinearLayout>(R.id.dotsContainer)
+        val btnBack = view.findViewById<Button>(R.id.btnTutorialBack)
+        val btnNext = view.findViewById<Button>(R.id.btnTutorialNext)
+
+        val pageCount = viewFlipper.childCount
+        val dots = mutableListOf<View>()
+
+        // Create dot indicators
+        for (i in 0 until pageCount) {
+            val dot = View(this).apply {
+                val size = (8 * resources.displayMetrics.density).toInt()
+                val margin = (4 * resources.displayMetrics.density).toInt()
+                layoutParams = LinearLayout.LayoutParams(size, size).apply {
+                    setMargins(margin, 0, margin, 0)
+                }
+                val drawable = GradientDrawable().apply {
+                    shape = GradientDrawable.OVAL
+                    setColor(if (i == 0) Color.WHITE else Color.parseColor("#40FFFFFF"))
+                }
+                background = drawable
+            }
+            dots.add(dot)
+            dotsContainer.addView(dot)
+        }
+
+        fun updatePage(position: Int) {
+            // Update dots
+            dots.forEachIndexed { index, dot ->
+                val drawable = GradientDrawable().apply {
+                    shape = GradientDrawable.OVAL
+                    setColor(if (index == position) Color.WHITE else Color.parseColor("#40FFFFFF"))
+                }
+                dot.background = drawable
+            }
+            // Update buttons
+            btnBack.visibility = if (position > 0) View.VISIBLE else View.GONE
+            btnNext.text = if (position == pageCount - 1) getString(R.string.tutorial_done) else getString(R.string.tutorial_next)
+        }
+
+        val dialog = androidx.appcompat.app.AlertDialog.Builder(this, android.R.style.Theme_DeviceDefault_Dialog_NoActionBar)
+            .setView(view)
+            .setCancelable(true)
+            .create()
+
+        dialog.window?.setBackgroundDrawableResource(android.R.color.transparent)
+
+        btnNext.setOnClickListener {
+            if (viewFlipper.displayedChild < pageCount - 1) {
+                viewFlipper.showNext()
+                updatePage(viewFlipper.displayedChild)
+            } else {
+                dialog.dismiss()
+            }
+        }
+
+        btnBack.setOnClickListener {
+            if (viewFlipper.displayedChild > 0) {
+                viewFlipper.showPrevious()
+                updatePage(viewFlipper.displayedChild)
+            }
+        }
+
+        updatePage(0)
+        dialog.show()
     }
 
     private fun updateCustomColorRowState(useDefaultColors: Boolean) {
@@ -391,6 +489,8 @@ class SettingsActivity : AppCompatActivity() {
             fadeView(binding.cardShortcuts, 0f)
             fadeView(binding.btnRemoveWidget, 0f)
             fadeView(binding.btnSetDefault, 0f)
+            fadeView(binding.btnChangeWallpaper, 0f)
+            fadeView(binding.btnShowTutorial, 0f)
 
             // Fade out other controls inside LayoutCard
             if (activeSeekBar == binding.sbAppDrawerTextSize) {
@@ -433,6 +533,8 @@ class SettingsActivity : AppCompatActivity() {
             fadeView(binding.cardShortcuts, 1f)
             fadeView(binding.btnRemoveWidget, 1f)
             fadeView(binding.btnSetDefault, 1f)
+            fadeView(binding.btnChangeWallpaper, 1f)
+            fadeView(binding.btnShowTutorial, 1f)
 
             // Restore all seekbars and rows inside LayoutCard
             fadeView(binding.rowAppDrawerTextSize, 1f)
