@@ -33,7 +33,7 @@
 
         <activity
             android:name=".AppDrawerActivity"
-            android:exported="false"
+            android:exported="true"
             android:screenOrientation="portrait"
             android:theme="@style/Theme.Koya.Translucent"
             android:windowSoftInputMode="adjustResize"/>
@@ -45,6 +45,7 @@
             android:theme="@style/Theme.Koya.Translucent"/>
 
         <activity android:name=".SettingsActivity" 
+            android:exported="true"
             android:screenOrientation="portrait"
             android:theme="@style/Theme.Koya" />
 

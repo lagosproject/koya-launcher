@@ -27,8 +27,9 @@ STATUS_BAR = 110   # pixels at top of phone screenshot to crop (status bar)
 NAV_BAR    = 48    # pixels at bottom (nav gesture bar)
 
 LANGS = ["en-US", "es-ES", "fr-FR"]
-SRC_DIR = "screenshots"
-OUT_DIR = "google_play"
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+SRC_DIR = os.path.join(SCRIPT_DIR, "screenshots")
+OUT_DIR = os.path.join(SCRIPT_DIR, "google_play")
 
 # Brand colours (Koya: Charcoal, Washi Paper, Terracotta/Vermilion)
 ACCENT  = (167, 104,  89)   # Terracotta/Vermilion #a76859
@@ -120,65 +121,383 @@ def apply_shadow(img, blur=18, offset=(6,10), color=(0,0,0,160)):
 
 # ─── Feature Card Generation ───────────────────────────────────────────────────
 
-def make_showcase_card(phone_path, headline, subtext, out_path):
+def get_wrap_height(draw, text, font, max_w, line_gap):
+    words = text.split()
+    lines, cur = [], ""
+    for w in words:
+        test = f"{cur} {w}".strip()
+        if draw.textbbox((0,0), test, font=font)[2] <= max_w:
+            cur = test
+        else:
+            if cur: lines.append(cur)
+            cur = w
+    if cur: lines.append(cur)
+    lh = draw.textbbox((0,0), "Ag", font=font)[3] + line_gap
+    return len(lines) * lh
+
+
+def draw_gesture_arrows(img):
     """
-    Build a 1080×1920 Google Play showcase card.
-    Top 38%  → dark gradient with title text
-    Bottom 62% → phone screenshot (status bar cropped, rounded, shadowed)
+    Draws minimalist, beautiful translucent white swipe indicator arrows
+    over the phone screenshot to demonstrate launcher gestures:
+      - Swipe Up (to App Drawer)
+      - Swipe Left (to Camera)
+      - Swipe Right (to Phone)
+    """
+    draw = ImageDraw.Draw(img)
+    w, h = img.size
+    cx = w // 2
+    cy = 880
+    
+    accent_color = (*ACCENT, 230)
+    white_color = (*WHITE, 230)
+    
+    # Draw central touch anchor circle
+    draw.ellipse([cx - 14, cy - 14, cx + 14, cy + 14], fill=accent_color, outline=white_color, width=2)
+    
+    # 1. Swipe Up Arrow
+    draw.line([(cx, cy - 35), (cx, cy - 200)], fill=white_color, width=4)
+    draw.polygon([(cx, cy - 215), (cx - 12, cy - 195), (cx + 12, cy - 195)], fill=white_color)
+    
+    # 2. Swipe Right Arrow
+    draw.line([(cx + 35, cy), (cx + 170, cy)], fill=white_color, width=4)
+    draw.polygon([(cx + 185, cy), (cx + 165, cy - 12), (cx + 165, cy + 12)], fill=white_color)
+
+    # 3. Swipe Left Arrow
+    draw.line([(cx - 35, cy), (cx - 170, cy)], fill=white_color, width=4)
+    draw.polygon([(cx - 185, cy), (cx - 165, cy - 12), (cx - 165, cy + 12)], fill=white_color)
+
+
+LABEL_TASKS = {
+    "en-US": "Tasks & Lists",
+    "es-ES": "Tareas y Listas",
+    "fr-FR": "Tâches et Listes"
+}
+
+LABEL_MUSIC = {
+    "en-US": "Music / Weather",
+    "es-ES": "Música / Tiempo",
+    "fr-FR": "Musique / Météo"
+}
+
+def draw_split_widget_overlay(img, lang, phone_path):
+    """
+    Applies a diagonal split screen overlay on the widget slot of the Home Screen screenshot,
+    showing a Task/Todoist widget on the top-left and either a real second widget screenshot
+    (home_widget2_screenshot.png) or a custom Music Player widget on the bottom-right.
+    """
+    w, h = 523, 477
+    x_offset, y_offset = 26, 318
+    
+    # 1. Load custom split config from split_config.json if it exists
+    config_path = os.path.join(os.path.dirname(__file__), "split_config.json")
+    p1 = None
+    p2 = None
+    show_labels = True
+    if os.path.exists(config_path):
+        try:
+            import json
+            with open(config_path, "r") as f:
+                config = json.load(f)
+                
+                # Check if the config contains coordinates from the configurator (1080x1920 space)
+                # If so, scale them to the cropped-and-scaled space (1200 height)
+                raw_img = Image.open(phone_path)
+                raw_w, raw_h = raw_img.size
+                scale = 1200.0 / (raw_h - STATUS_BAR - NAV_BAR)
+                
+                if "x_offset" in config:
+                    # Convert original coordinates to cropped-and-scaled space
+                    x_offset = int(config["x_offset"] * scale)
+                    y_offset = int((config["y_offset"] - STATUS_BAR) * scale)
+                    w = int(config["width"] * scale)
+                    h = int(config["height"] * scale)
+                    
+                    p1_orig = config.get("p1", [0, config["height"]])
+                    p2_orig = config.get("p2", [config["width"], 0])
+                    p1 = [p1_orig[0] * scale, p1_orig[1] * scale]
+                    p2 = [p2_orig[0] * scale, p2_orig[1] * scale]
+                else:
+                    x_offset = config.get("x_offset", x_offset)
+                    y_offset = config.get("y_offset", y_offset)
+                    w = config.get("width", w)
+                    h = config.get("height", h)
+                    p1 = config.get("p1", None)
+                    p2 = config.get("p2", None)
+                
+                show_labels = config.get("show_labels", show_labels)
+        except Exception as e:
+            print(f"  ⚠ Failed to load split_config.json: {e}")
+            
+    if p1 is None:
+        p1 = [0, h]
+    if p2 is None:
+        p2 = [w, 0]
+    
+    # Check if a real second screenshot with a different widget exists
+    phone_widget2_path = phone_path.replace("home_screenshot.png", "home_widget2_screenshot.png")
+    
+    use_custom_music = True
+    widget2_img = None
+    
+    if os.path.exists(phone_widget2_path):
+        try:
+            raw2 = Image.open(phone_widget2_path).convert("RGBA")
+            cropped2 = raw2.crop((0, STATUS_BAR, raw2.width, raw2.height - NAV_BAR))
+            # Let's scale to match the main screenshot scaling exactly!
+            scale_factor = img.height / cropped2.height
+            pw2 = int(cropped2.width * scale_factor)
+            ph2 = img.height
+            scaled2 = cropped2.resize((pw2, ph2), Image.LANCZOS)
+            # Crop the widget region from the scaled second screenshot
+            widget2_img = scaled2.crop((x_offset, y_offset, x_offset + w, y_offset + h))
+            use_custom_music = False
+        except Exception as e:
+            print(f"  ⚠ Failed to load second widget screenshot: {e}. Falling back to music widget.")
+            use_custom_music = True
+            
+    if use_custom_music:
+        # Create the music player overlay image (RGBA)
+        widget2_img = Image.new("RGBA", (w, h), (0, 0, 0, 0))
+        mdraw = ImageDraw.Draw(widget2_img)
+        # Matching translucent widget background
+        mdraw.rounded_rectangle([0, 0, w, h], radius=28, fill=(18, 18, 18, 245))
+        
+        # Draw album cover
+        cover_size = 120
+        cx = 360
+        cy = 160
+        mdraw.rounded_rectangle([cx, cy, cx + cover_size, cy + cover_size], radius=16, fill=(167, 104, 89, 255))
+        mdraw.ellipse([cx + 25, cy + 25, cx + 95, cy + 95], fill=(28, 25, 23, 255))
+        mdraw.ellipse([cx + 50, cy + 50, cx + 70, cy + 70], fill=(250, 250, 249, 255))
+        
+        # Title / Artist
+        f_title = font_sans(26, bold=True)
+        f_artist = font_sans(20, bold=False)
+        mdraw.text((220, 295), "Golden Hour", font=f_title, fill=WHITE)
+        mdraw.text((220, 330), "JVKE", font=f_artist, fill=MUTED)
+        
+        # Progress bar
+        bar_y = 375
+        bar_w = 260
+        mdraw.rounded_rectangle([220, bar_y, 220 + bar_w, bar_y + 6], radius=3, fill=(168, 162, 158, 80))
+        mdraw.rounded_rectangle([220, bar_y, 220 + int(bar_w * 0.45), bar_y + 6], radius=3, fill=ACCENT)
+        
+        # Controls
+        mdraw.polygon([(230, 400), (230, 420), (242, 410)], fill=WHITE)
+        mdraw.polygon([(270, 402), (270, 418), (280, 410)], fill=MUTED)
+        mdraw.line([(282, 402), (282, 418)], fill=MUTED, width=3)
+
+    # Generate custom split polygons using perimeter distance sorting
+    def get_dist(p):
+        px, py = p
+        if py == 0: return px
+        if px == w: return w + py
+        if py == h: return w + h + (w - px)
+        if px == 0: return w + h + w + (h - py)
+        return 0
+
+    d1 = get_dist(p1)
+    d2 = get_dist(p2)
+    
+    corners = [
+        ((w, 0), w),
+        ((w, h), w + h),
+        ((0, h), w + h + w),
+        ((0, 0), w + h + w + h)
+    ]
+    
+    pts1 = []  # Bottom-Right (widget 2)
+    pts2 = []  # Top-Left (widget 1)
+    
+    # Sort points clockwise
+    if d1 < d2:
+        pts1.append(tuple(p1))
+        for c, cd in corners:
+            if d1 < cd < d2:
+                pts1.append(c)
+        pts1.append(tuple(p2))
+        
+        pts2.append(tuple(p2))
+        for c, cd in corners:
+            if cd > d2 or cd < d1:
+                pts2.append(c)
+        pts2.append(tuple(p1))
+    else:
+        pts1.append(tuple(p2))
+        for c, cd in corners:
+            if d2 < cd < d1:
+                pts1.append(c)
+        pts1.append(tuple(p1))
+        
+        pts2.append(tuple(p1))
+        for c, cd in corners:
+            if cd > d1 or cd < d2:
+                pts2.append(c)
+        pts2.append(tuple(p2))
+
+    # Create the split masks
+    mask1 = Image.new("L", (w, h), 0)
+    mask_draw1 = ImageDraw.Draw(mask1)
+    mask_draw1.polygon(pts2, fill=255)
+    
+    mask2 = Image.new("L", (w, h), 0)
+    mask_draw2 = ImageDraw.Draw(mask2)
+    mask_draw2.polygon(pts1, fill=255)
+    
+    # 3. Create a clean container for the widget area with standard dark background
+    widget_area = Image.new("RGBA", (w, h), (18, 18, 18, 255))
+    
+    # Crop the first widget from the original screenshot
+    widget1_img = img.crop((x_offset, y_offset, x_offset + w, y_offset + h))
+    
+    # Paste widget 1 (top-left) with mask1
+    w1_rgba = widget1_img.convert("RGBA")
+    w1_rgba.putalpha(mask1)
+    widget_area.alpha_composite(w1_rgba, (0, 0))
+    
+    # Paste widget 2 (bottom-right) with mask2
+    w2_rgba = widget2_img.convert("RGBA")
+    w2_rgba.putalpha(mask2)
+    widget_area.alpha_composite(w2_rgba, (0, 0))
+    
+    # Paste the compiled clean widget area back onto the main screenshot
+    img.paste(widget_area, (x_offset, y_offset), widget_area)
+    
+    # 4. Draw the diagonal divider line
+    draw = ImageDraw.Draw(img)
+    line_start = (x_offset + p1[0], y_offset + p1[1])
+    line_end = (x_offset + p2[0], y_offset + p2[1])
+    draw.line([line_start, line_end], fill=(*WHITE, 255), width=3)
+    
+    # 5. Add small descriptive labels with badge backgrounds for high readability
+    if show_labels:
+        f_lbl = font_sans(16, bold=True)
+        
+        lbl_tasks = LABEL_TASKS.get(lang, "Tasks & Lists")
+        lbl_music = LABEL_MUSIC.get(lang, "Music / Weather")
+        
+        # Draw Tasks Badge
+        if lbl_tasks:
+            tasks_w = draw.textbbox((0,0), lbl_tasks, font=f_lbl)[2]
+            bx1 = x_offset + 25
+            by1 = y_offset + 25
+            bx2 = bx1 + tasks_w + 20
+            by2 = by1 + 32
+            draw.rounded_rectangle([bx1, by1, bx2, by2], radius=16, fill=(18, 18, 18, 230), outline=(*MUTED, 120), width=1)
+            draw.text((bx1 + 10, by1 + 4), lbl_tasks, font=f_lbl, fill=MUTED)
+        
+        # Draw Music Badge
+        if lbl_music:
+            music_w = draw.textbbox((0,0), lbl_music, font=f_lbl)[2]
+            mx1 = x_offset + w - music_w - 45
+            my1 = y_offset + h - 55
+            mx2 = mx1 + music_w + 20
+            my2 = my1 + 32
+            draw.rounded_rectangle([mx1, my1, mx2, my2], radius=16, fill=(18, 18, 18, 230), outline=(*ACCENT, 120), width=1)
+            draw.text((mx1 + 10, my1 + 4), lbl_music, font=f_lbl, fill=ACCENT)
+
+
+# ─── Feature Graphic Generation ────────────────────────────────────────────────
+
+def make_showcase_card(phone_path, headline, subtext, out_path, lang=None):
+    """
+    Build a 1080×1920 Google Play showcase card with:
+      - Clean top-aligned phone screenshot (rounded, premium drop-shadow, subtle border)
+      - Bottom copy layout featuring premium geometric sans-serif typography,
+        dynamically centered vertically in the bottom panel to ensure balanced margins.
     """
     W, H = OUT_W, OUT_H
-    TEXT_H = int(H * 0.38)    # 729 px
-    PHONE_H = H - TEXT_H       # 1191 px
-
+    PHONE_H = 1200
+    
     # ── Background
     canvas = dark_gradient(W, H).convert("RGBA")
     draw   = ImageDraw.Draw(canvas)
 
-    # ── Text section
-    f_label = font_mono(26, bold=False)
-    f_head  = font_mono(62, bold=True)
-    f_sub   = font_sans(33, bold=False)
-
-    y = 76
-    center_text(draw, "KOYA", y, f_label, (*ACCENT, 210))
-    y += 46
-    accent_rule(draw, y, color=(*ACCENT, 150))
-    y += 26
-
-    # Headline
-    wrap_text_centered(draw, headline, y, f_head, (*WHITE, 255), max_w=W - 80)
-    y += 80
-    accent_rule(draw, y, color=(*ACCENT, 180), length=120)
-    y += 22
-    wrap_text_centered(draw, subtext, y, f_sub, (*MUTED, 220), max_w=W - 100)
-
-    # ── Phone screenshot embed
+    # ── 1. Phone screenshot embed (Centered at the top)
     raw  = Image.open(phone_path).convert("RGBA")
-    # Crop status bar
     cropped = raw.crop((0, STATUS_BAR, raw.width, raw.height - NAV_BAR))
+    
     # Scale to fill PHONE_H
     scale   = PHONE_H / cropped.height
     pw      = int(cropped.width * scale)
     ph      = PHONE_H
     scaled  = cropped.resize((pw, ph), Image.LANCZOS)
-    # Rounded corners
-    mask    = rounded_rect_mask((pw, ph), radius=42)
+    
+    # Create rounded corner mask
+    mask    = rounded_rect_mask((pw, ph), radius=48)
     scaled.putalpha(mask)
+
+    # Draw dynamic gesture overlays (arrows) directly on the scaled phone screenshot
+    if "gestures" in out_path:
+        draw_gesture_arrows(scaled)
+
+    # Draw split widget overlay (diagonal split) directly on the scaled phone screenshot
+    if out_path.endswith("showcase_home.png"):
+        draw_split_widget_overlay(scaled, lang, phone_path)
+    
+    # Draw a thin premium accent border around the phone screenshot
+    border_draw = ImageDraw.Draw(scaled)
+    border_draw.rounded_rectangle([(0, 0), (pw - 1, ph - 1)], radius=48, outline=(*ACCENT, 180), width=4)
+    
     # Drop shadow
-    shadowed, (six, siy) = apply_shadow(scaled, blur=18, offset=(6, 12))
-    # Center horizontally, top at TEXT_H
+    shadowed, (six, siy) = apply_shadow(scaled, blur=22, offset=(0, 14))
+    
+    # Center horizontally, start at y = 100
     sx = (W - shadowed.width) // 2
-    sy = TEXT_H - siy
+    sy = 100 - siy
     canvas.paste(shadowed, (sx, sy), shadowed)
 
-    # Soft vertical fade between text and phone areas
-    fade_h = 120
+    # Soft vertical fade-out transition between the phone and bottom text areas
+    fade_h = 100
+    fade_y = 1250
     fade   = Image.new("RGBA", (W, fade_h))
     fd     = ImageDraw.Draw(fade)
     for i in range(fade_h):
-        a = int(255 * ((1 - i/fade_h) ** 1.6))
+        a = int(255 * ((i/fade_h) ** 1.6))
         fd.line([(0,i),(W,i)], fill=(*BG_DARK, a))
-    canvas.alpha_composite(fade, (0, TEXT_H))
+    canvas.alpha_composite(fade, (0, fade_y))
+
+    # ── 2. Text section (Bottom)
+    f_label = font_sans(24, bold=True)
+    f_head  = font_sans(56, bold=True)
+    f_sub   = font_sans(32, bold=False)
+
+    # Calculate text heights and padding dynamically to center it perfectly
+    bbox = draw.textbbox((0,0), "K  O  Y  A", font=f_label)
+    label_h = bbox[3] - bbox[1]
+    gap1 = 50
+    rule1_w = 2
+    gap2 = 36
+    headline_h = get_wrap_height(draw, headline, f_head, W - 100, 16)
+    gap3 = 24
+    rule2_w = 2
+    gap4 = 30
+    subtext_h = get_wrap_height(draw, subtext, f_sub, W - 120, 12)
+
+    total_text_h = label_h + gap1 + rule1_w + gap2 + headline_h + gap3 + rule2_w + gap4 + subtext_h
+
+    # The bottom panel goes from y = 1300 to y = 1920
+    panel_start = 1300
+    panel_h = H - panel_start
+    
+    # Center the text block vertically in the panel
+    y = panel_start + (panel_h - total_text_h) // 2
+
+    # Draw the elements sequentially
+    center_text(draw, "K  O  Y  A", y, f_label, (*ACCENT, 210))
+    y += label_h + gap1
+    accent_rule(draw, y, length=100, color=(*ACCENT, 140))
+    y += rule1_w + gap2
+
+    # Headline
+    y_used = wrap_text_centered(draw, headline, y, f_head, (*WHITE, 255), max_w=W - 100, line_gap=16)
+    y += y_used + gap3
+    accent_rule(draw, y, length=60, color=(*ACCENT, 160))
+    y += rule2_w + gap4
+    
+    # Subtext
+    wrap_text_centered(draw, subtext, y, f_sub, (*MUTED, 220), max_w=W - 120, line_gap=12)
 
     os.makedirs(os.path.dirname(out_path), exist_ok=True)
     canvas.convert("RGB").save(out_path, "PNG", optimize=True)
@@ -291,10 +610,9 @@ def draw_koya_logo(draw, cx, cy, height, foreground_color, accent_color):
 def make_feature_graphic(out_path):
     """
     Generates a 1024×500 Store Banner (Feature Graphic) following best practices:
-      - Clean, bold branding
+      - Split layout (logo on the left, copy on the right) to differentiate from FunCoStory
       - Premium charcoal gradient
-      - Centered large Koya logo in white and terracotta accent
-      - Stylized title and subtitle
+      - Premium geometric sans-serif typography
     """
     W, H = 1024, 500
     
@@ -308,22 +626,26 @@ def make_feature_graphic(out_path):
         b = int(BG_DARK[2] + (ACCENT[2] - BG_DARK[2]) * ratio * 0.04)
         draw.line([(0, i), (W, i)], fill=(r, g, b))
         
-    # Draw large Koya logo in center
-    logo_h = 190
-    draw_koya_logo(draw, cx=W//2, cy=H//2 - 50, height=logo_h, foreground_color=WHITE, accent_color=ACCENT)
+    # Draw Koya logo on the left (centered vertically at x = 280, y = 250)
+    logo_h = 220
+    draw_koya_logo(draw, cx=280, cy=H//2, height=logo_h, foreground_color=WHITE, accent_color=ACCENT)
     
-    # Draw Text
-    f_title = font_mono(44, bold=True)
-    f_sub = font_sans(20, bold=False)
+    # Draw Text on the right (centered vertically, left-aligned starting at x = 480)
+    f_title = font_sans(54, bold=True)
+    f_sub = font_sans(24, bold=False)
     
-    y = H//2 + 70
-    center_text(draw, "KOYA", y, f_title, WHITE, width=W)
+    # Draw brand title (widely spaced)
+    title_text = "K O Y A"
+    y = H//2 - 60
+    draw.text((490, y), title_text, font=f_title, fill=WHITE)
     
-    y += 58
-    accent_rule(draw, y, length=120, color=(*ACCENT, 200), width=W)
+    # Accent rule below title
+    y += 84
+    draw.line([(490, y), (610, y)], fill=(*ACCENT, 220), width=3)
     
-    y += 18
-    center_text(draw, "Distraction-free home launcher", y, f_sub, MUTED, width=W)
+    # Subtitle
+    y += 24
+    draw.text((490, y), "Distraction-free home launcher", font=f_sub, fill=MUTED)
     
     os.makedirs(os.path.dirname(out_path), exist_ok=True)
     canvas.save(out_path, "PNG", optimize=True)
@@ -336,16 +658,19 @@ def make_feature_graphic(out_path):
 SHOWCASES = {
     "en-US": [
         ("home_screenshot.png",     "ESSENTIALS ONLY",    "A clean clock, battery bar, and a single widget slot. Keep it minimal.", "showcase_home.png"),
+        ("home_screenshot.png",     "SWIPE GESTURES",     "Swipe up for apps, swipe right to call, and swipe left to open the camera.", "showcase_gestures.png"),
         ("drawer_screenshot.png",   "INSTANT SEARCH",     "Find and launch your apps instantly with a fast, alphabetical app list.", "showcase_drawer.png"),
         ("settings_screenshot.png", "TAILORED FIT",       "Customize themes, text sizes, and shortcuts to suit your daily focus.",  "showcase_settings.png"),
     ],
     "es-ES": [
         ("home_screenshot.png",     "SOLO LO ESENCIAL",   "Un reloj limpio, barra de batería y un solo espacio para widget.",      "showcase_home.png"),
+        ("home_screenshot.png",     "GESTOS RÁPIDOS",     "Desliza arriba para apps, derecha para llamar e izquierda para cámara.", "showcase_gestures.png"),
         ("drawer_screenshot.png",   "BÚSQUEDA AL INSTANTE","Encuentra y abre tus apps de inmediato con una lista alfabética rápida.", "showcase_drawer.png"),
         ("settings_screenshot.png", "A TU MEDIDA",         "Personaliza temas, tamaños de texto y accesos directos según tu enfoque.", "showcase_settings.png"),
     ],
     "fr-FR": [
         ("home_screenshot.png",     "L'ESSENTIEL UNIQUEMENT", "Une horloge épurée, une barre de batterie et un unique emplacement de widget.", "showcase_home.png"),
+        ("home_screenshot.png",     "GESTES INTUITIFS",       "Glissez vers le haut pour les applis, à droite pour appeler, à gauche pour l'appareil photo.", "showcase_gestures.png"),
         ("drawer_screenshot.png",   "RECHERCHE INSTANTANÉE",   "Trouvez et lancez vos applications instantanément avec une liste fluide.", "showcase_drawer.png"),
         ("settings_screenshot.png", "SUR MESURE",             "Personnalisez les thèmes, tailles de texte et raccourcis pour rester concentré.", "showcase_settings.png"),
     ],
@@ -368,7 +693,7 @@ def process_lang(lang):
             print(f"  ⚠  {phone_path} not found — skipping showcase")
             continue
             
-        make_showcase_card(phone_path, headline, subtext, out_path)
+        make_showcase_card(phone_path, headline, subtext, out_path, lang)
 
 
 def main():
@@ -398,8 +723,8 @@ def main():
         files = sorted(f for f in os.listdir(out) if f.endswith(".png"))
         count = len(files)
         total += count
-        status = "✅" if count == 3 else "⚠ "
-        print(f"  {status} {lang}: {count}/3 screenshots generated in {out}/")
+        status = "✅" if count == len(SHOWCASES[lang]) else "⚠ "
+        print(f"  {status} {lang}: {count}/{len(SHOWCASES[lang])} screenshots generated in {out}/")
         for f in files:
             kb = os.path.getsize(f"{out}/{f}") // 1024
             print(f"       {f}  ({kb} KB)")

@@ -129,4 +129,10 @@ object PrefsHelper {
         } catch (e: Exception) { /* ignore */ }
         return list
     }
+
+    fun saveScreenshotMode(context: Context, mode: Boolean) =
+        prefs(context).edit().putBoolean("screenshot_mode", mode).apply()
+
+    fun loadScreenshotMode(context: Context): Boolean =
+        prefs(context).getBoolean("screenshot_mode", false)
 }

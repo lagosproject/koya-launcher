@@ -32,6 +32,8 @@ class AppDrawerActivity : AppCompatActivity() {
         binding = ActivityAppDrawerBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+
+
         appRepository = AppRepository(this)
         val textSize = PrefsHelper.loadAppDrawerTextSize(this).toFloat()
         adapter = AppListAdapter(

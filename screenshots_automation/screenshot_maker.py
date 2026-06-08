@@ -20,7 +20,8 @@ import sys
 
 LANGS = ["en-US", "es-ES", "fr-FR"]
 PACKAGE = "com.lagosproject.koya"
-SRC_DIR = "screenshots"
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+SRC_DIR = os.path.join(SCRIPT_DIR, "screenshots")
 
 
 def run_cmd(cmd):
@@ -66,15 +67,21 @@ def capture_screenshots_for_lang(lang):
     run_cmd(f"adb shell am force-stop {PACKAGE}")
     time.sleep(1.0)
 
-    # 1. Capture Home Activity
-    print("  Launching HomeActivity...")
-    run_cmd(f"adb shell am start -n {PACKAGE}/.HomeActivity")
+    # 1. Capture Home Activity (First Widget)
+    print("  Launching HomeActivity (First Widget)...")
+    run_cmd(f"adb shell am start -n {PACKAGE}/.HomeActivity --ez screenshot_mode true")
     time.sleep(3.5)  # Wait for launcher to load clock & layouts
     screencap(f"{SRC_DIR}/{lang}/home_screenshot.png")
 
-    # 2. Capture App Drawer (Swipe up from Home)
-    print("  Opening AppDrawer via swipe gesture...")
-    run_cmd("adb shell input swipe 540 1800 540 600 300")
+    # 1b. Capture Home Activity (Second Widget)
+    print(f"\n👉 [ACTION REQUIRED] Please change the home screen widget to the SECOND widget on your device (for {lang}).")
+    input("   Press [ENTER] when the second widget is configured and ready on screen... ")
+    print("  Capturing HomeActivity (Second Widget)...")
+    screencap(f"{SRC_DIR}/{lang}/home_widget2_screenshot.png")
+
+    # 2. Capture App Drawer
+    print("  Opening AppDrawer directly...")
+    run_cmd(f"adb shell am start -n {PACKAGE}/.AppDrawerActivity")
     time.sleep(2.0)
     screencap(f"{SRC_DIR}/{lang}/drawer_screenshot.png")
 
@@ -82,9 +89,9 @@ def capture_screenshots_for_lang(lang):
     run_cmd("adb shell input keyevent 4")
     time.sleep(1.0)
 
-    # 3. Capture Settings (Long press empty area on Home)
-    print("  Opening Settings via long press gesture...")
-    run_cmd("adb shell input swipe 540 1500 540 1500 1500")
+    # 3. Capture Settings
+    print("  Opening Settings directly...")
+    run_cmd(f"adb shell am start -n {PACKAGE}/.SettingsActivity")
     time.sleep(2.0)
     screencap(f"{SRC_DIR}/{lang}/settings_screenshot.png")
 
@@ -111,11 +118,18 @@ def main():
         except Exception as e:
             print(f"  ❌ Error capturing {lang}: {e}")
 
+    # Restore launcher back to normal wallpaper mode
+    print("\nRestoring launcher back to normal wallpaper mode...")
+    run_cmd(f"adb shell am start -n {PACKAGE}/.HomeActivity --ez screenshot_mode false")
+    time.sleep(1.0)
+
     print("\n✅ Screenshots capture completed.")
     print("Running google_play_prep.py to generate store composites...")
     
     # Run the image preparation script
-    subprocess.run(["python3", "google_play_prep.py"])
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    prep_script = os.path.join(script_dir, "google_play_prep.py")
+    subprocess.run(["python3", prep_script])
 
 
 if __name__ == "__main__":

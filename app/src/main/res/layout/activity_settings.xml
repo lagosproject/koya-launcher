@@ -1,440 +1,487 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.core.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/rootLayout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/black">
 
-    <LinearLayout
+    <!-- Live Preview Container -->
+    <FrameLayout
+        android:id="@+id/previewContainer"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:padding="24dp">
+        android:layout_height="match_parent"
+        android:visibility="gone">
 
-        <!-- Top Header -->
-        <RelativeLayout
+        <!-- Home Preview Layout -->
+        <include
+            android:id="@+id/homePreview"
+            layout="@layout/activity_home"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:visibility="gone" />
+
+        <!-- App Drawer Preview Layout -->
+        <include
+            android:id="@+id/appDrawerPreview"
+            layout="@layout/activity_app_drawer"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:visibility="gone" />
+    </FrameLayout>
+
+    <!-- Main Scrollable Settings UI -->
+    <androidx.core.widget.NestedScrollView
+        android:id="@+id/settingsScrollView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@android:color/transparent">
+
+        <LinearLayout
+            android:id="@+id/settingsContainer"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="24dp">
+            android:orientation="vertical"
+            android:padding="24dp">
 
+            <!-- Top Header -->
+            <RelativeLayout
+                android:id="@+id/headerLayout"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="24dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentStart="true"
+                    android:layout_centerVertical="true"
+                    android:text="@string/settings_title"
+                    android:textColor="@color/white"
+                    android:textSize="28sp"
+                    android:fontFamily="sans-serif-thin"
+                    android:letterSpacing="0.2" />
+
+                <ImageButton
+                    android:id="@+id/btnBack"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:layout_alignParentEnd="true"
+                    android:layout_centerVertical="true"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:src="@drawable/ic_close"
+                    android:contentDescription="Close settings"
+                    app:tint="@color/white"/>
+            </RelativeLayout>
+
+            <!-- Layout section -->
             <TextView
-                android:layout_width="wrap_content"
+                android:id="@+id/tvLayoutCategory"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_alignParentStart="true"
-                android:layout_centerVertical="true"
-                android:text="@string/settings_title"
-                android:textColor="@color/white"
-                android:textSize="28sp"
-                android:fontFamily="sans-serif-thin"
-                android:letterSpacing="0.2" />
+                android:text="@string/layout_category"
+                android:textColor="@color/text_secondary"
+                android:textSize="12sp"
+                android:fontFamily="sans-serif-medium"
+                android:letterSpacing="0.15"
+                android:layout_marginBottom="8dp"/>
 
-            <ImageButton
-                android:id="@+id/btnBack"
-                android:layout_width="40dp"
-                android:layout_height="40dp"
-                android:layout_alignParentEnd="true"
-                android:layout_centerVertical="true"
-                android:background="?attr/selectableItemBackgroundBorderless"
-                android:src="@drawable/ic_close"
-                android:contentDescription="Close settings"
-                app:tint="@color/white"/>
-        </RelativeLayout>
-
-        <!-- Layout section -->
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="@string/layout_category"
-            android:textColor="@color/text_secondary"
-            android:textSize="12sp"
-            android:fontFamily="sans-serif-medium"
-            android:letterSpacing="0.15"
-            android:layout_marginBottom="8dp"/>
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:background="@drawable/settings_card"
-            android:layout_marginBottom="16dp">
-
-            <!-- App Drawer Text Size -->
             <LinearLayout
+                android:id="@+id/layoutCard"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:gravity="center_vertical"
-                android:layout_marginBottom="8dp">
-
-                <TextView
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:text="@string/app_drawer_text_size"
-                    android:textColor="@color/text_secondary"
-                    android:textSize="14sp"
-                    android:fontFamily="sans-serif-light"/>
-
-                <TextView
-                    android:id="@+id/tvAppDrawerTextSizeVal"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:textColor="@color/white"
-                    android:textSize="14sp"
-                    android:fontFamily="sans-serif-medium"
-                    android:text="22sp"/>
-            </LinearLayout>
-
-            <SeekBar
-                android:id="@+id/sbAppDrawerTextSize"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:max="24"
-                android:progress="10"
-                android:thumbTint="@color/white"
-                android:progressTint="@color/white"
-                android:progressBackgroundTint="@color/text_dim"
-                android:layout_marginBottom="16dp"/>
-
-            <!-- Home Shortcut Text Size -->
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:gravity="center_vertical"
-                android:layout_marginBottom="8dp">
-
-                <TextView
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:text="@string/home_shortcut_text_size"
-                    android:textColor="@color/text_secondary"
-                    android:textSize="14sp"
-                    android:fontFamily="sans-serif-light"/>
-
-                <TextView
-                    android:id="@+id/tvHomeShortcutTextSizeVal"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:textColor="@color/white"
-                    android:textSize="14sp"
-                    android:fontFamily="sans-serif-medium"
-                    android:text="18sp"/>
-            </LinearLayout>
-
-            <SeekBar
-                android:id="@+id/sbHomeShortcutTextSize"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:max="24"
-                android:progress="6"
-                android:thumbTint="@color/white"
-                android:progressTint="@color/white"
-                android:progressBackgroundTint="@color/text_dim"
-                android:layout_marginBottom="16dp"/>
-
-            <!-- Widget Area Height -->
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:gravity="center_vertical"
-                android:layout_marginBottom="8dp">
-
-                <TextView
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:text="@string/widget_area_height"
-                    android:textColor="@color/text_secondary"
-                    android:textSize="14sp"
-                    android:fontFamily="sans-serif-light"/>
-
-                <TextView
-                    android:id="@+id/tvWidgetHeightVal"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:textColor="@color/white"
-                    android:textSize="14sp"
-                    android:fontFamily="sans-serif-medium"
-                    android:text="350dp"/>
-            </LinearLayout>
-
-            <SeekBar
-                android:id="@+id/sbWidgetHeight"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:max="500"
-                android:progress="250"
-                android:thumbTint="@color/white"
-                android:progressTint="@color/white"
-                android:progressBackgroundTint="@color/text_dim"
-                android:layout_marginBottom="16dp"/>
-
-            <!-- Battery Indicator Visibility -->
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:gravity="center_vertical">
-
-                <TextView
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:text="@string/show_battery_indicator"
-                    android:textColor="@color/white"
-                    android:textSize="16sp"
-                    android:fontFamily="sans-serif-light"/>
-
-                <androidx.appcompat.widget.SwitchCompat
-                    android:id="@+id/swBatteryBar"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:thumbTint="@color/white"
-                    app:trackTint="@color/text_dim"/>
-            </LinearLayout>
-        </LinearLayout>
-
-        <!-- Colors section -->
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="@string/colors_category"
-            android:textColor="@color/text_secondary"
-            android:textSize="12sp"
-            android:fontFamily="sans-serif-medium"
-            android:letterSpacing="0.15"
-            android:layout_marginBottom="8dp"/>
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:background="@drawable/settings_card"
-            android:layout_marginBottom="16dp">
-
-            <!-- Use Default Colors -->
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:gravity="center_vertical"
+                android:orientation="vertical"
+                android:background="@drawable/settings_card"
                 android:layout_marginBottom="16dp">
 
-                <TextView
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:text="@string/use_wallpaper_colors"
-                    android:textColor="@color/white"
-                    android:textSize="16sp"
-                    android:fontFamily="sans-serif-light"/>
-
-                <androidx.appcompat.widget.SwitchCompat
-                    android:id="@+id/swDefaultColors"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:thumbTint="@color/white"
-                    app:trackTint="@color/text_dim"/>
-            </LinearLayout>
-
-            <!-- Custom Text Color Picker Row -->
-            <LinearLayout
-                android:id="@+id/rowCustomColor"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:gravity="center_vertical"
-                android:background="?attr/selectableItemBackground"
-                android:clickable="true"
-                android:focusable="true"
-                android:paddingVertical="8dp">
-
+                <!-- App Drawer Text Size -->
                 <LinearLayout
-                    android:layout_width="0dp"
+                    android:id="@+id/rowAppDrawerTextSize"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:orientation="vertical">
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:layout_marginBottom="8dp">
 
                     <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="@string/app_drawer_text_size"
+                        android:textColor="@color/text_secondary"
+                        android:textSize="14sp"
+                        android:fontFamily="sans-serif-light"/>
+
+                    <TextView
+                        android:id="@+id/tvAppDrawerTextSizeVal"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Custom Text Color"
+                        android:textColor="@color/white"
+                        android:textSize="14sp"
+                        android:fontFamily="sans-serif-medium"
+                        android:text="22sp"/>
+                </LinearLayout>
+
+                <SeekBar
+                    android:id="@+id/sbAppDrawerTextSize"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:max="24"
+                    android:progress="10"
+                    android:thumbTint="@color/white"
+                    android:progressTint="@color/white"
+                    android:progressBackgroundTint="@color/text_dim"
+                    android:layout_marginBottom="16dp"/>
+
+                <!-- Home Shortcut Text Size -->
+                <LinearLayout
+                    android:id="@+id/rowHomeShortcutTextSize"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:layout_marginBottom="8dp">
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="@string/home_shortcut_text_size"
+                        android:textColor="@color/text_secondary"
+                        android:textSize="14sp"
+                        android:fontFamily="sans-serif-light"/>
+
+                    <TextView
+                        android:id="@+id/tvHomeShortcutTextSizeVal"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textColor="@color/white"
+                        android:textSize="14sp"
+                        android:fontFamily="sans-serif-medium"
+                        android:text="18sp"/>
+                </LinearLayout>
+
+                <SeekBar
+                    android:id="@+id/sbHomeShortcutTextSize"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:max="24"
+                    android:progress="6"
+                    android:thumbTint="@color/white"
+                    android:progressTint="@color/white"
+                    android:progressBackgroundTint="@color/text_dim"
+                    android:layout_marginBottom="16dp"/>
+
+                <!-- Widget Area Height -->
+                <LinearLayout
+                    android:id="@+id/rowWidgetHeight"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:layout_marginBottom="8dp">
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="@string/widget_area_height"
+                        android:textColor="@color/text_secondary"
+                        android:textSize="14sp"
+                        android:fontFamily="sans-serif-light"/>
+
+                    <TextView
+                        android:id="@+id/tvWidgetHeightVal"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textColor="@color/white"
+                        android:textSize="14sp"
+                        android:fontFamily="sans-serif-medium"
+                        android:text="350dp"/>
+                </LinearLayout>
+
+                <SeekBar
+                    android:id="@+id/sbWidgetHeight"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:max="500"
+                    android:progress="250"
+                    android:thumbTint="@color/white"
+                    android:progressTint="@color/white"
+                    android:progressBackgroundTint="@color/text_dim"
+                    android:layout_marginBottom="16dp"/>
+
+                <!-- Battery Indicator Visibility -->
+                <LinearLayout
+                    android:id="@+id/rowBatteryIndicator"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical">
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="@string/show_battery_indicator"
                         android:textColor="@color/white"
                         android:textSize="16sp"
                         android:fontFamily="sans-serif-light"/>
 
-                    <TextView
-                        android:id="@+id/tvCustomColorHex"
+                    <androidx.appcompat.widget.SwitchCompat
+                        android:id="@+id/swBatteryBar"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="#FFFFFF"
-                        android:textColor="@color/text_secondary"
-                        android:textSize="12sp"
-                        android:fontFamily="sans-serif-medium"/>
+                        android:thumbTint="@color/white"
+                        app:trackTint="@color/text_dim"/>
                 </LinearLayout>
-
-                <View
-                    android:id="@+id/viewColorIndicator"
-                    android:layout_width="24dp"
-                    android:layout_height="24dp"
-                    android:layout_marginEnd="8dp"/>
             </LinearLayout>
-        </LinearLayout>
 
-        <!-- Usage & Events section -->
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="@string/information_category"
-            android:textColor="@color/text_secondary"
-            android:textSize="12sp"
-            android:fontFamily="sans-serif-medium"
-            android:letterSpacing="0.15"
-            android:layout_marginBottom="8dp"/>
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:background="@drawable/settings_card"
-            android:layout_marginBottom="16dp">
-
-            <!-- Screen Usage Counter -->
-            <LinearLayout
+            <!-- Colors section -->
+            <TextView
+                android:id="@+id/tvColorsCategory"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:gravity="center_vertical"
+                android:text="@string/colors_category"
+                android:textColor="@color/text_secondary"
+                android:textSize="12sp"
+                android:fontFamily="sans-serif-medium"
+                android:letterSpacing="0.15"
+                android:layout_marginBottom="8dp"/>
+
+            <LinearLayout
+                android:id="@+id/cardColors"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:background="@drawable/settings_card"
                 android:layout_marginBottom="16dp">
 
-                <TextView
-                    android:layout_width="0dp"
+                <!-- Use Default Colors -->
+                <LinearLayout
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:text="@string/show_screen_usage"
-                    android:textColor="@color/white"
-                    android:textSize="16sp"
-                    android:fontFamily="sans-serif-light"/>
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:layout_marginBottom="16dp">
 
-                <androidx.appcompat.widget.SwitchCompat
-                    android:id="@+id/swUsageCounter"
-                    android:layout_width="wrap_content"
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="@string/use_wallpaper_colors"
+                        android:textColor="@color/white"
+                        android:textSize="16sp"
+                        android:fontFamily="sans-serif-light"/>
+
+                    <androidx.appcompat.widget.SwitchCompat
+                        android:id="@+id/swDefaultColors"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:thumbTint="@color/white"
+                        app:trackTint="@color/text_dim"/>
+                </LinearLayout>
+
+                <!-- Custom Text Color Picker Row -->
+                <LinearLayout
+                    android:id="@+id/rowCustomColor"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:thumbTint="@color/white"
-                    app:trackTint="@color/text_dim"/>
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:background="?attr/selectableItemBackground"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:paddingVertical="8dp">
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Custom Text Color"
+                            android:textColor="@color/white"
+                            android:textSize="16sp"
+                            android:fontFamily="sans-serif-light"/>
+
+                        <TextView
+                            android:id="@+id/tvCustomColorHex"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="#FFFFFF"
+                            android:textColor="@color/text_secondary"
+                            android:textSize="12sp"
+                            android:fontFamily="sans-serif-medium"/>
+                    </LinearLayout>
+
+                    <View
+                        android:id="@+id/viewColorIndicator"
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
+                        android:layout_marginEnd="8dp"/>
+                </LinearLayout>
             </LinearLayout>
 
-            <!-- Calendar Events -->
+            <!-- Usage & Events section -->
+            <TextView
+                android:id="@+id/tvInfoCategory"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/information_category"
+                android:textColor="@color/text_secondary"
+                android:textSize="12sp"
+                android:fontFamily="sans-serif-medium"
+                android:letterSpacing="0.15"
+                android:layout_marginBottom="8dp"/>
+
             <LinearLayout
+                android:id="@+id/cardInfo"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:gravity="center_vertical">
+                android:orientation="vertical"
+                android:background="@drawable/settings_card"
+                android:layout_marginBottom="16dp">
 
-                <TextView
-                    android:layout_width="0dp"
+                <!-- Screen Usage Counter -->
+                <LinearLayout
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:text="@string/show_calendar_events"
-                    android:textColor="@color/white"
-                    android:textSize="16sp"
-                    android:fontFamily="sans-serif-light"/>
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:layout_marginBottom="16dp">
 
-                <androidx.appcompat.widget.SwitchCompat
-                    android:id="@+id/swCalendarEvents"
-                    android:layout_width="wrap_content"
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="@string/show_screen_usage"
+                        android:textColor="@color/white"
+                        android:textSize="16sp"
+                        android:fontFamily="sans-serif-light"/>
+
+                    <androidx.appcompat.widget.SwitchCompat
+                        android:id="@+id/swUsageCounter"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:thumbTint="@color/white"
+                        app:trackTint="@color/text_dim"/>
+                </LinearLayout>
+
+                <!-- Calendar Events -->
+                <LinearLayout
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:thumbTint="@color/white"
-                    app:trackTint="@color/text_dim"/>
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical">
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="@string/show_calendar_events"
+                        android:textColor="@color/white"
+                        android:textSize="16sp"
+                        android:fontFamily="sans-serif-light"/>
+
+                    <androidx.appcompat.widget.SwitchCompat
+                        android:id="@+id/swCalendarEvents"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:thumbTint="@color/white"
+                        app:trackTint="@color/text_dim"/>
+                </LinearLayout>
             </LinearLayout>
+
+            <!-- Shortcuts section -->
+            <TextView
+                android:id="@+id/tvShortcutsCategory"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/home_shortcuts_category"
+                android:textColor="@color/text_secondary"
+                android:textSize="12sp"
+                android:fontFamily="sans-serif-medium"
+                android:letterSpacing="0.15"
+                android:layout_marginBottom="8dp"/>
+
+            <LinearLayout
+                android:id="@+id/cardShortcuts"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:background="@drawable/settings_card"
+                android:layout_marginBottom="24dp">
+
+                <Button
+                    android:id="@+id/btnShortcut0"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/shortcut_1"
+                    android:textColor="@color/black"
+                    android:backgroundTint="@color/white"
+                    android:fontFamily="sans-serif-medium"
+                    android:letterSpacing="0.05"
+                    android:layout_marginBottom="8dp"/>
+
+                <Button
+                    android:id="@+id/btnShortcut1"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/shortcut_2"
+                    android:textColor="@color/black"
+                    android:backgroundTint="@color/white"
+                    android:fontFamily="sans-serif-medium"
+                    android:letterSpacing="0.05"
+                    android:layout_marginBottom="8dp"/>
+
+                <Button
+                    android:id="@+id/btnShortcut2"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/shortcut_3"
+                    android:textColor="@color/black"
+                    android:backgroundTint="@color/white"
+                    android:fontFamily="sans-serif-medium"
+                    android:letterSpacing="0.05"
+                    android:layout_marginBottom="8dp"/>
+
+                <Button
+                    android:id="@+id/btnShortcut3"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/shortcut_4"
+                    android:textColor="@color/black"
+                    android:backgroundTint="@color/white"
+                    android:fontFamily="sans-serif-medium"
+                    android:letterSpacing="0.05"/>
+            </LinearLayout>
+
+            <Button
+                android:id="@+id/btnRemoveWidget"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/remove_widget"
+                android:textColor="@color/white"
+                android:backgroundTint="#AA0000"
+                android:fontFamily="sans-serif-medium"
+                android:letterSpacing="0.1"
+                android:layout_marginBottom="16dp"/>
+
+            <Button
+                android:id="@+id/btnSetDefault"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/set_default_launcher"
+                android:textColor="@color/black"
+                android:backgroundTint="@color/text_secondary"
+                android:fontFamily="sans-serif-medium"
+                android:letterSpacing="0.1"
+                android:layout_marginBottom="24dp"/>
+
         </LinearLayout>
-
-        <!-- Shortcuts section -->
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="@string/home_shortcuts_category"
-            android:textColor="@color/text_secondary"
-            android:textSize="12sp"
-            android:fontFamily="sans-serif-medium"
-            android:letterSpacing="0.15"
-            android:layout_marginBottom="8dp"/>
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:background="@drawable/settings_card"
-            android:layout_marginBottom="24dp">
-
-            <Button
-                android:id="@+id/btnShortcut0"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="@string/shortcut_1"
-                android:textColor="@color/black"
-                android:backgroundTint="@color/white"
-                android:fontFamily="sans-serif-medium"
-                android:letterSpacing="0.05"
-                android:layout_marginBottom="8dp"/>
-
-            <Button
-                android:id="@+id/btnShortcut1"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="@string/shortcut_2"
-                android:textColor="@color/black"
-                android:backgroundTint="@color/white"
-                android:fontFamily="sans-serif-medium"
-                android:letterSpacing="0.05"
-                android:layout_marginBottom="8dp"/>
-
-            <Button
-                android:id="@+id/btnShortcut2"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="@string/shortcut_3"
-                android:textColor="@color/black"
-                android:backgroundTint="@color/white"
-                android:fontFamily="sans-serif-medium"
-                android:letterSpacing="0.05"
-                android:layout_marginBottom="8dp"/>
-
-            <Button
-                android:id="@+id/btnShortcut3"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="@string/shortcut_4"
-                android:textColor="@color/black"
-                android:backgroundTint="@color/white"
-                android:fontFamily="sans-serif-medium"
-                android:letterSpacing="0.05"/>
-        </LinearLayout>
-
-        <Button
-            android:id="@+id/btnRemoveWidget"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="@string/remove_widget"
-            android:textColor="@color/white"
-            android:backgroundTint="#AA0000"
-            android:fontFamily="sans-serif-medium"
-            android:letterSpacing="0.1"
-            android:layout_marginBottom="16dp"/>
-
-        <Button
-            android:id="@+id/btnSetDefault"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="@string/set_default_launcher"
-            android:textColor="@color/black"
-            android:backgroundTint="@color/text_secondary"
-            android:fontFamily="sans-serif-medium"
-            android:letterSpacing="0.1"
-            android:layout_marginBottom="24dp"/>
-
-    </LinearLayout>
-</androidx.core.widget.NestedScrollView>
+    </androidx.core.widget.NestedScrollView>
+</FrameLayout>

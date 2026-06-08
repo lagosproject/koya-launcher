@@ -189,6 +189,11 @@ class HomeActivity : AppCompatActivity() {
         binding = ActivityHomeBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        if (intent != null && intent.hasExtra("screenshot_mode")) {
+            val mode = intent.getBooleanExtra("screenshot_mode", false)
+            PrefsHelper.saveScreenshotMode(this, mode)
+        }
+
         appWidgetHost = AppWidgetHost(this, WIDGET_HOST_ID)
         appWidgetManager = AppWidgetManager.getInstance(this)
 
@@ -196,6 +201,16 @@ class HomeActivity : AppCompatActivity() {
         setupShortcuts()
         setupGestureDetector()
         setupWidgetArea()
+    }
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        setIntent(intent)
+        if (intent.hasExtra("screenshot_mode")) {
+            val mode = intent.getBooleanExtra("screenshot_mode", false)
+            PrefsHelper.saveScreenshotMode(this, mode)
+            applyLayoutSettings()
+        }
     }
 
     override fun onStart() {
@@ -230,6 +245,8 @@ class HomeActivity : AppCompatActivity() {
     }
 
     private fun applyLayoutSettings() {
+        binding.rootLayout.setBackgroundColor(Color.TRANSPARENT)
+
         // Battery Indicator - Updated to target batteryProgress directly
         binding.batteryProgress.visibility = if (PrefsHelper.loadBatteryBarVisible(this)) View.VISIBLE else View.GONE
         
@@ -507,7 +524,13 @@ class HomeActivity : AppCompatActivity() {
         shortcutViews.forEachIndexed { slot, tv ->
             val data = PrefsHelper.loadShortcut(this, slot)
             if (data != null) {
-                tv.text = data.second
+                val localizedLabel = try {
+                    val appInfo = packageManager.getApplicationInfo(data.first, 0)
+                    packageManager.getApplicationLabel(appInfo).toString()
+                } catch (e: Exception) {
+                    data.second
+                }
+                tv.text = localizedLabel
                 tv.setOnClickListener { launchPackage(data.first) }
             } else {
                 tv.text = getString(R.string.empty_shortcut)

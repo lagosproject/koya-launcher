@@ -38,3 +38,7 @@ keystore.properties
 
 # VS Code files
 .vscode/
+
+# Google Play Store screenshot automation
+/google_play/
+/screenshots/
