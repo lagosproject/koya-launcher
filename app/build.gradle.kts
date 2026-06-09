@@ -7,7 +7,7 @@ plugins {
 
 android {
     namespace = "com.lagosproject.koya"
-    compileSdk = 34
+    compileSdk = 35
 
     val keystorePropertiesFile = rootProject.file("keystore.properties")
     val keystoreProperties = Properties()
@@ -27,9 +27,9 @@ android {
     defaultConfig {
         applicationId = "com.lagosproject.koya"
         minSdk = 26
-        targetSdk = 34
-        versionCode = 1
-        versionName = "1.0.0"
+        targetSdk = 35
+        versionCode = 2
+        versionName = "1.0.1"
     }
 
     buildTypes {
