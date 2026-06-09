@@ -2,9 +2,9 @@
 <resources>
     <!-- Base Strings -->
     <string name="app_name">Koya</string>
-    <string name="widget_hint">long press to add widget</string>
+    <string name="widget_hint">Long press to add widget</string>
     <string name="empty_shortcut">+</string>
-    <string name="search_hint">search apps…</string>
+    <string name="search_hint">Search apps…</string>
     <string name="permission_needed">Permission needed</string>
     <string name="permission_needed_calendar">Permission needed for Calendar</string>
     <string name="no_wellbeing_app">No Digital Wellbeing app found</string>
@@ -22,13 +22,14 @@
     <!-- Layout/Settings Strings -->
     <string name="settings_title">SETTINGS</string>
     <string name="layout_category">Layout</string>
-    <string name="app_drawer_text_size">App Drawer Text Size (sp)</string>
-    <string name="home_shortcut_text_size">Home Shortcut Text Size (sp)</string>
-    <string name="widget_area_height">Widget Area Height (dp)</string>
+    <string name="app_drawer_text_size">App Drawer Text Size</string>
+    <string name="home_shortcut_text_size">Home Shortcut Text Size</string>
+    <string name="widget_area_height">Widget Area Height</string>
     <string name="show_battery_indicator">Show Battery Indicator</string>
+    <string name="hide_empty_tooltips">Hide empty slot placeholders</string>
     <string name="colors_category">Colors</string>
     <string name="use_wallpaper_colors">Use Wallpaper Colors</string>
-    <string name="custom_text_color">Custom Text Color (Hex: #FFFFFF)</string>
+    <string name="custom_text_color">Custom Text Color</string>
     <string name="information_category">Information</string>
     <string name="show_screen_usage">Show Screen Usage</string>
     <string name="show_calendar_events">Show Calendar Events</string>
@@ -39,7 +40,6 @@
     <string name="shortcut_4">Shortcut 4</string>
     <string name="remove_widget">REMOVE WIDGET</string>
     <string name="set_default_launcher">SET AS DEFAULT LAUNCHER</string>
-    <string name="save_changes">SAVE CHANGES</string>
 
     <!-- Color Picker Dialog Strings -->
     <string name="pick_text_color">Pick text color</string>
@@ -48,9 +48,13 @@
     <string name="color_green">Green</string>
     <string name="color_blue">Blue</string>
 
-    <!-- Wallpaper -->
+    <!-- Wallpaper / Widget Picker -->
     <string name="change_wallpaper">CHANGE WALLPAPER</string>
     <string name="wallpaper_chooser_error">No wallpaper chooser app found</string>
+    <string name="choose_widget">Choose Widget</string>
+    <string name="search_widgets_hint">Search widgets…</string>
+    <string name="no_preview_available">No preview available</string>
+    <string name="widget_preview_area">WIDGET PREVIEW AREA\nHeight: %1$ddp</string>
 
     <!-- Tutorial -->
     <string name="show_tutorial">SHOW TUTORIAL</string>
@@ -67,4 +71,5 @@
     <string name="tutorial_next">NEXT</string>
     <string name="tutorial_back">BACK</string>
     <string name="tutorial_done">GOT IT</string>
+    <string name="tutorial_skip">SKIP</string>
 </resources>

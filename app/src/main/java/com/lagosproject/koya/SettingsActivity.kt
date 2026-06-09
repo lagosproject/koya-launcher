@@ -68,6 +68,7 @@ class SettingsActivity : AppCompatActivity() {
         binding.tvWidgetHeightVal.text = "${widgetHeight}dp"
 
         binding.swBatteryBar.isChecked = PrefsHelper.loadBatteryBarVisible(this)
+        binding.swHideEmptyTooltips.isChecked = PrefsHelper.loadHideEmptyTooltips(this)
         binding.swDefaultColors.isChecked = PrefsHelper.loadUseDefaultColors(this)
 
         currentColor = PrefsHelper.loadCustomTextColor(this)
@@ -249,6 +250,7 @@ class SettingsActivity : AppCompatActivity() {
         val dotsContainer = view.findViewById<LinearLayout>(R.id.dotsContainer)
         val btnBack = view.findViewById<Button>(R.id.btnTutorialBack)
         val btnNext = view.findViewById<Button>(R.id.btnTutorialNext)
+        val tvSkip = view.findViewById<TextView>(R.id.tvTutorialSkip)
 
         val pageCount = viewFlipper.childCount
         val dots = mutableListOf<View>()
@@ -283,11 +285,12 @@ class SettingsActivity : AppCompatActivity() {
             // Update buttons
             btnBack.visibility = if (position > 0) View.VISIBLE else View.GONE
             btnNext.text = if (position == pageCount - 1) getString(R.string.tutorial_done) else getString(R.string.tutorial_next)
+            tvSkip.visibility = if (position == pageCount - 1) View.GONE else View.VISIBLE
         }
 
         val dialog = androidx.appcompat.app.AlertDialog.Builder(this, android.R.style.Theme_DeviceDefault_Dialog_NoActionBar)
             .setView(view)
-            .setCancelable(true)
+            .setCancelable(false)
             .create()
 
         dialog.window?.setBackgroundDrawableResource(android.R.color.transparent)
@@ -308,8 +311,16 @@ class SettingsActivity : AppCompatActivity() {
             }
         }
 
+        tvSkip.setOnClickListener {
+            dialog.dismiss()
+        }
+
         updatePage(0)
         dialog.show()
+        dialog.window?.setLayout(
+            android.view.ViewGroup.LayoutParams.MATCH_PARENT,
+            android.view.ViewGroup.LayoutParams.MATCH_PARENT
+        )
     }
 
     private fun updateCustomColorRowState(useDefaultColors: Boolean) {
@@ -340,6 +351,7 @@ class SettingsActivity : AppCompatActivity() {
         val homeShortcutSize = binding.sbHomeShortcutTextSize.progress + 12
         val widgetHeight = binding.sbWidgetHeight.progress + 100
         val batteryVisible = binding.swBatteryBar.isChecked
+        val hideEmpty = binding.swHideEmptyTooltips.isChecked
         
         val useDefaultColors = binding.swDefaultColors.isChecked
         val showUsage = binding.swUsageCounter.isChecked
@@ -349,6 +361,7 @@ class SettingsActivity : AppCompatActivity() {
         PrefsHelper.saveHomeShortcutTextSize(this, homeShortcutSize)
         PrefsHelper.saveWidgetHeight(this, widgetHeight)
         PrefsHelper.saveBatteryBarVisible(this, batteryVisible)
+        PrefsHelper.saveHideEmptyTooltips(this, hideEmpty)
         
         PrefsHelper.saveUseDefaultColors(this, useDefaultColors)
         PrefsHelper.saveCustomTextColor(this, currentColor)
@@ -444,11 +457,11 @@ class SettingsActivity : AppCompatActivity() {
 
         androidx.appcompat.app.AlertDialog.Builder(this)
             .setView(view)
-            .setPositiveButton("OK") { _, _ ->
+            .setPositiveButton(android.R.string.ok) { _, _ ->
                 val color = Color.rgb(r, g, b)
                 updateColorIndicator(color)
             }
-            .setNegativeButton("Cancel", null)
+            .setNegativeButton(android.R.string.cancel, null)
             .show()
     }
 
@@ -499,29 +512,32 @@ class SettingsActivity : AppCompatActivity() {
                 fadeView(binding.rowWidgetHeight, 0f)
                 fadeView(binding.sbWidgetHeight, 0f)
                 fadeView(binding.rowBatteryIndicator, 0f)
+                fadeView(binding.rowHideEmptyTooltips, 0f)
             } else if (activeSeekBar == binding.sbHomeShortcutTextSize) {
                 fadeView(binding.rowAppDrawerTextSize, 0f)
                 fadeView(binding.sbAppDrawerTextSize, 0f)
                 fadeView(binding.rowWidgetHeight, 0f)
                 fadeView(binding.sbWidgetHeight, 0f)
                 fadeView(binding.rowBatteryIndicator, 0f)
+                fadeView(binding.rowHideEmptyTooltips, 0f)
             } else if (activeSeekBar == binding.sbWidgetHeight) {
                 fadeView(binding.rowAppDrawerTextSize, 0f)
                 fadeView(binding.sbAppDrawerTextSize, 0f)
                 fadeView(binding.rowHomeShortcutTextSize, 0f)
                 fadeView(binding.sbHomeShortcutTextSize, 0f)
                 fadeView(binding.rowBatteryIndicator, 0f)
+                fadeView(binding.rowHideEmptyTooltips, 0f)
             }
         } else {
             // Hide preview container
             binding.previewContainer.visibility = View.GONE
             binding.homePreview.root.visibility = View.GONE
             binding.appDrawerPreview.root.visibility = View.GONE
-
+ 
             // Restore root layout solid background
             binding.rootLayout.setBackgroundColor(Color.BLACK)
             binding.layoutCard.background = androidx.core.content.ContextCompat.getDrawable(this, R.drawable.settings_card)
-
+ 
             // Fade in all elements
             fadeView(binding.headerLayout, 1f)
             fadeView(binding.tvLayoutCategory, 1f)
@@ -535,7 +551,7 @@ class SettingsActivity : AppCompatActivity() {
             fadeView(binding.btnSetDefault, 1f)
             fadeView(binding.btnChangeWallpaper, 1f)
             fadeView(binding.btnShowTutorial, 1f)
-
+ 
             // Restore all seekbars and rows inside LayoutCard
             fadeView(binding.rowAppDrawerTextSize, 1f)
             fadeView(binding.sbAppDrawerTextSize, 1f)
@@ -544,6 +560,7 @@ class SettingsActivity : AppCompatActivity() {
             fadeView(binding.rowWidgetHeight, 1f)
             fadeView(binding.sbWidgetHeight, 1f)
             fadeView(binding.rowBatteryIndicator, 1f)
+            fadeView(binding.rowHideEmptyTooltips, 1f)
         }
     }
 
@@ -577,6 +594,7 @@ class SettingsActivity : AppCompatActivity() {
         } else {
             (binding.sbHomeShortcutTextSize.progress + 12).toFloat()
         }
+        val hideEmpty = binding.swHideEmptyTooltips.isChecked
         val shortcuts = arrayOf(home.shortcut0, home.shortcut1, home.shortcut2, home.shortcut3)
         shortcuts.forEachIndexed { index, tv ->
             val data = PrefsHelper.loadShortcut(this, index)
@@ -588,8 +606,15 @@ class SettingsActivity : AppCompatActivity() {
                     data.second
                 }
                 tv.text = localizedLabel
+                tv.visibility = View.VISIBLE
             } else {
-                tv.text = getString(R.string.empty_shortcut)
+                if (hideEmpty) {
+                    tv.text = ""
+                    tv.visibility = View.INVISIBLE
+                } else {
+                    tv.text = getString(R.string.empty_shortcut)
+                    tv.visibility = View.VISIBLE
+                }
             }
             tv.textSize = currentShortcutSize
         }
@@ -611,13 +636,14 @@ class SettingsActivity : AppCompatActivity() {
         if (activeSlider == binding.sbWidgetHeight) {
             home.widgetContainer.setBackgroundColor(Color.parseColor("#80FF0000")) // Semi-transparent red
             home.tvWidgetHint.setTextColor(Color.WHITE)
-            home.tvWidgetHint.text = "WIDGET PREVIEW AREA\nHeight: ${currentWidgetHeight}dp"
+            home.tvWidgetHint.text = getString(R.string.widget_preview_area, currentWidgetHeight)
             home.tvWidgetHint.visibility = View.VISIBLE
         } else {
             home.widgetContainer.setBackgroundResource(R.drawable.widget_bg)
             home.tvWidgetHint.setTextColor(textColor)
             home.tvWidgetHint.text = getString(R.string.widget_hint)
-            home.tvWidgetHint.visibility = if (PrefsHelper.loadWidgetId(this) == -1) View.VISIBLE else View.GONE
+            val hasWidget = PrefsHelper.loadWidgetId(this) != -1
+            home.tvWidgetHint.visibility = if (hasWidget || hideEmpty) View.GONE else View.VISIBLE
         }
 
         // 6. Usage and Calendar visibility

@@ -217,7 +217,8 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="horizontal"
-                    android:gravity="center_vertical">
+                    android:gravity="center_vertical"
+                    android:layout_marginBottom="16dp">
 
                     <TextView
                         android:layout_width="0dp"
@@ -230,6 +231,31 @@
 
                     <androidx.appcompat.widget.SwitchCompat
                         android:id="@+id/swBatteryBar"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:thumbTint="@color/white"
+                        app:trackTint="@color/text_dim"/>
+                </LinearLayout>
+
+                <!-- Hide Empty Tooltips -->
+                <LinearLayout
+                    android:id="@+id/rowHideEmptyTooltips"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical">
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="@string/hide_empty_tooltips"
+                        android:textColor="@color/white"
+                        android:textSize="16sp"
+                        android:fontFamily="sans-serif-light"/>
+
+                    <androidx.appcompat.widget.SwitchCompat
+                        android:id="@+id/swHideEmptyTooltips"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:thumbTint="@color/white"
@@ -303,7 +329,7 @@
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Custom Text Color"
+                            android:text="@string/custom_text_color"
                             android:textColor="@color/white"
                             android:textSize="16sp"
                             android:fontFamily="sans-serif-light"/>

@@ -2,9 +2,9 @@
 <resources>
     <!-- Base Strings -->
     <string name="app_name">Koya</string>
-    <string name="widget_hint">appui long pour ajouter un widget</string>
+    <string name="widget_hint">Appuyez longuement pour ajouter un widget</string>
     <string name="empty_shortcut">+</string>
-    <string name="search_hint">rechercher des applications…</string>
+    <string name="search_hint">Rechercher des applications…</string>
     <string name="permission_needed">Autorisation requise</string>
     <string name="permission_needed_calendar">Autorisation requise pour l\'agenda</string>
     <string name="no_wellbeing_app">Aucune application Bien-être numérique trouvée</string>
@@ -22,13 +22,14 @@
     <!-- Layout/Settings Strings -->
     <string name="settings_title">PARAMÈTRES</string>
     <string name="layout_category">Disposition</string>
-    <string name="app_drawer_text_size">Taille du texte du tiroir d\'applications (sp)</string>
-    <string name="home_shortcut_text_size">Taille du texte du raccourci d\'accueil (sp)</string>
-    <string name="widget_area_height">Hauteur de la zone du widget (dp)</string>
+    <string name="app_drawer_text_size">Taille du texte du tiroir d\'applications</string>
+    <string name="home_shortcut_text_size">Taille du texte du raccourci d\'accueil</string>
+    <string name="widget_area_height">Hauteur de la zone du widget</string>
     <string name="show_battery_indicator">Afficher l\'indicateur de batterie</string>
+    <string name="hide_empty_tooltips">Masquer les emplacements vides</string>
     <string name="colors_category">Couleurs</string>
     <string name="use_wallpaper_colors">Utiliser les couleurs du fond d\'écran</string>
-    <string name="custom_text_color">Couleur de texte personnalisée (Hex: #FFFFFF)</string>
+    <string name="custom_text_color">Couleur de texte personnalisée</string>
     <string name="information_category">Informations</string>
     <string name="show_screen_usage">Afficher l\'utilisation de l\'écran</string>
     <string name="show_calendar_events">Afficher les événements de l\'agenda</string>
@@ -39,7 +40,6 @@
     <string name="shortcut_4">Raccourci 4</string>
     <string name="remove_widget">SUPPRIMER LE WIDGET</string>
     <string name="set_default_launcher">DÉFINIR COMME LANCEUR PAR DÉFAUT</string>
-    <string name="save_changes">ENREGISTRER LES MODIFICATIONS</string>
 
     <!-- Color Picker Dialog Strings -->
     <string name="pick_text_color">Choisir la couleur du texte</string>
@@ -48,9 +48,13 @@
     <string name="color_green">Vert</string>
     <string name="color_blue">Bleu</string>
 
-    <!-- Wallpaper -->
+    <!-- Wallpaper / Widget Picker -->
     <string name="change_wallpaper">CHANGER LE FOND D\'ÉCRAN</string>
     <string name="wallpaper_chooser_error">Aucune application de fond d\'écran trouvée</string>
+    <string name="choose_widget">Choisir un widget</string>
+    <string name="search_widgets_hint">Rechercher des widgets…</string>
+    <string name="no_preview_available">Aucun aperçu disponible</string>
+    <string name="widget_preview_area">ZONE D\'APERÇU DU WIDGET\nHauteur: %1$ddp</string>
 
     <!-- Tutorial -->
     <string name="show_tutorial">AFFICHER LE TUTORIEL</string>
@@ -67,4 +71,5 @@
     <string name="tutorial_next">SUIVANT</string>
     <string name="tutorial_back">RETOUR</string>
     <string name="tutorial_done">COMPRIS</string>
+    <string name="tutorial_skip">PASSER</string>
 </resources>

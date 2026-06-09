@@ -20,6 +20,7 @@ object PrefsHelper {
     private const val KEY_SHOW_USAGE_COUNTER = "show_usage_counter"
     private const val KEY_SHOW_CALENDAR_EVENTS = "show_calendar_events"
     private const val KEY_APP_CACHE = "app_cache"
+    private const val KEY_HIDE_EMPTY_TOOLTIPS = "hide_empty_tooltips"
 
     private fun prefs(context: Context): SharedPreferences =
         context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
@@ -75,6 +76,12 @@ object PrefsHelper {
 
     fun loadBatteryBarVisible(context: Context): Boolean =
         prefs(context).getBoolean(KEY_BATTERY_BAR_VISIBLE, true)
+
+    fun saveHideEmptyTooltips(context: Context, hide: Boolean) =
+        prefs(context).edit().putBoolean(KEY_HIDE_EMPTY_TOOLTIPS, hide).apply()
+
+    fun loadHideEmptyTooltips(context: Context): Boolean =
+        prefs(context).getBoolean(KEY_HIDE_EMPTY_TOOLTIPS, false)
 
     fun saveWidgetHeight(context: Context, heightInDp: Int) =
         prefs(context).edit().putInt(KEY_WIDGET_HEIGHT_DP, heightInDp).apply()

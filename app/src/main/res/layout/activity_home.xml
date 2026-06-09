@@ -100,6 +100,17 @@
         app:layout_constraintEnd_toEndOf="parent"
         android:layout_marginTop="8dp"/>
 
+    <View
+        android:id="@+id/widgetHoldProgressView"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:background="@drawable/widget_hold_fill_bg"
+        android:visibility="gone"
+        app:layout_constraintTop_toTopOf="@id/widgetContainer"
+        app:layout_constraintBottom_toBottomOf="@id/widgetContainer"
+        app:layout_constraintStart_toStartOf="@id/widgetContainer"
+        app:layout_constraintEnd_toEndOf="@id/widgetContainer"/>
+
     <TextView
         android:id="@+id/tvWidgetHint"
         android:layout_width="wrap_content"

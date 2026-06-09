@@ -44,6 +44,12 @@
             android:screenOrientation="portrait"
             android:theme="@style/Theme.Koya.Translucent"/>
 
+        <activity
+            android:name=".WidgetPickerActivity"
+            android:exported="false"
+            android:screenOrientation="portrait"
+            android:theme="@style/Theme.Koya.Translucent"/>
+
         <activity android:name=".SettingsActivity" 
             android:exported="true"
             android:screenOrientation="portrait"

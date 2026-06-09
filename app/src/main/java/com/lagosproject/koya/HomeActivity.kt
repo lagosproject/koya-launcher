@@ -1,5 +1,8 @@
 package com.lagosproject.koya
 
+import android.animation.Animator
+import android.animation.AnimatorListenerAdapter
+import android.animation.ValueAnimator
 import android.app.Activity
 import android.appwidget.AppWidgetHost
 import android.appwidget.AppWidgetHostView
@@ -73,11 +76,69 @@ class HomeActivity : AppCompatActivity() {
     ) { result ->
         if (result.resultCode == RESULT_OK) {
             val appWidgetId = result.data?.getIntExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, -1) ?: -1
+            val component = result.data?.getParcelableExtra<ComponentName>(AppWidgetManager.EXTRA_APPWIDGET_PROVIDER)
+            if (appWidgetId != -1 && component != null) {
+                bindAndConfigureWidget(appWidgetId, component)
+            } else {
+                if (pendingWidgetId != -1) {
+                    appWidgetHost.deleteAppWidgetId(pendingWidgetId)
+                    pendingWidgetId = -1
+                }
+            }
+        } else {
+            if (pendingWidgetId != -1) {
+                appWidgetHost.deleteAppWidgetId(pendingWidgetId)
+                pendingWidgetId = -1
+            }
+        }
+    }
+
+    private val bindWidgetLauncher = registerForActivityResult(
+        androidx.activity.result.contract.ActivityResultContracts.StartActivityForResult()
+    ) { result ->
+        val id = pendingWidgetId
+        val comp = pendingWidgetComponent
+        if (result.resultCode == RESULT_OK && id != -1 && comp != null) {
+            val success = appWidgetManager.bindAppWidgetIdIfAllowed(id, comp)
+            if (success) {
+                val appWidgetInfo = appWidgetManager.getAppWidgetInfo(id)
+                if (appWidgetInfo?.configure != null) {
+                    val configIntent = Intent(AppWidgetManager.ACTION_APPWIDGET_CONFIGURE).apply {
+                        component = appWidgetInfo.configure
+                        putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, id)
+                    }
+                    try {
+                        createWidgetLauncher.launch(configIntent)
+                    } catch (e: Exception) {
+                        Log.e("MinimalLauncher", "Failed to start config activity after bind", e)
+                        appWidgetHost.deleteAppWidgetId(id)
+                        pendingWidgetId = -1
+                    }
+                } else {
+                    hostWidget(id)
+                    pendingWidgetId = -1
+                }
+            } else {
+                appWidgetHost.deleteAppWidgetId(id)
+                pendingWidgetId = -1
+            }
+        } else {
+            if (id != -1) {
+                appWidgetHost.deleteAppWidgetId(id)
+                pendingWidgetId = -1
+            }
+        }
+        pendingWidgetComponent = null
+    }
+
+    private fun bindAndConfigureWidget(appWidgetId: Int, component: ComponentName) {
+        val success = appWidgetManager.bindAppWidgetIdIfAllowed(appWidgetId, component)
+        if (success) {
             val appWidgetInfo = appWidgetManager.getAppWidgetInfo(appWidgetId)
             if (appWidgetInfo?.configure != null) {
                 pendingWidgetId = appWidgetId
                 val configIntent = Intent(AppWidgetManager.ACTION_APPWIDGET_CONFIGURE).apply {
-                    component = appWidgetInfo.configure
+                    this.component = appWidgetInfo.configure
                     putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, appWidgetId)
                 }
                 try {
@@ -92,10 +153,13 @@ class HomeActivity : AppCompatActivity() {
                 pendingWidgetId = -1
             }
         } else {
-            if (pendingWidgetId != -1) {
-                appWidgetHost.deleteAppWidgetId(pendingWidgetId)
-                pendingWidgetId = -1
+            pendingWidgetId = appWidgetId
+            pendingWidgetComponent = component
+            val intent = Intent(AppWidgetManager.ACTION_APPWIDGET_BIND).apply {
+                putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, appWidgetId)
+                putExtra(AppWidgetManager.EXTRA_APPWIDGET_PROVIDER, component)
             }
+            bindWidgetLauncher.launch(intent)
         }
     }
 
@@ -120,8 +184,8 @@ class HomeActivity : AppCompatActivity() {
             if (oldId != -1) {
                 appWidgetHost.deleteAppWidgetId(oldId)
                 binding.widgetContainer.removeAllViews()
-                binding.tvWidgetHint.visibility = View.VISIBLE
                 PrefsHelper.clearWidget(this)
+                updateWidgetHintVisibility()
                 Log.d("MinimalLauncher", "Widget $oldId removed via settings")
             }
         }
@@ -179,6 +243,9 @@ class HomeActivity : AppCompatActivity() {
 
     // Widget ID currently being configured
     private var pendingWidgetId = -1
+    private var pendingWidgetComponent: ComponentName? = null
+    private var holdAnimator: ValueAnimator? = null
+    private var maxHoldProgressAlpha = 0.35f
 
     private var wallpaperColorListener: WallpaperManager.OnColorsChangedListener? = null
     
@@ -254,6 +321,7 @@ class HomeActivity : AppCompatActivity() {
 
     private fun applyLayoutSettings() {
         binding.rootLayout.setBackgroundColor(Color.TRANSPARENT)
+        updateWidgetHintVisibility()
 
         // Battery Indicator - Updated to target batteryProgress directly
         binding.batteryProgress.visibility = if (PrefsHelper.loadBatteryBarVisible(this)) View.VISIBLE else View.GONE
@@ -280,6 +348,12 @@ class HomeActivity : AppCompatActivity() {
             binding.batteryProgress.setIndicatorColor(customColor)
             val trackColor = (customColor and 0x00FFFFFF) or (0x33 shl 24)
             binding.batteryProgress.setTrackColor(trackColor)
+            binding.tvWidgetHint.setTextColor(customColor)
+
+            // Dynamic progress tint & opacity
+            binding.widgetHoldProgressView.background?.setTint(customColor)
+            val isDarkCustomColor = ColorUtils.calculateLuminance(customColor) < 0.5
+            maxHoldProgressAlpha = if (isDarkCustomColor) 0.65f else 0.8f
         } else {
             // Re-apply wallpaper colors if needed (will be handled by the listener naturally, but good to force refresh)
             refreshWallpaperColors()
@@ -480,12 +554,19 @@ class HomeActivity : AppCompatActivity() {
         super.onSaveInstanceState(outState)
         outState.putInt("pendingWidgetId", pendingWidgetId)
         outState.putInt("pendingSlot", pendingSlot)
+        outState.putParcelable("pendingWidgetComponent", pendingWidgetComponent)
     }
 
     override fun onRestoreInstanceState(savedInstanceState: Bundle) {
         super.onRestoreInstanceState(savedInstanceState)
         pendingWidgetId = savedInstanceState.getInt("pendingWidgetId", -1)
         pendingSlot = savedInstanceState.getInt("pendingSlot", -1)
+        pendingWidgetComponent = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            savedInstanceState.getParcelable("pendingWidgetComponent", ComponentName::class.java)
+        } else {
+            @Suppress("DEPRECATION")
+            savedInstanceState.getParcelable("pendingWidgetComponent")
+        }
     }
 
     // ── Click Listeners ───────────────────────────────────────────────────
@@ -529,6 +610,7 @@ class HomeActivity : AppCompatActivity() {
     // ── Shortcuts ─────────────────────────────────────────────────────────
 
     private fun setupShortcuts() {
+        val hideEmpty = PrefsHelper.loadHideEmptyTooltips(this)
         shortcutViews.forEachIndexed { slot, tv ->
             val data = PrefsHelper.loadShortcut(this, slot)
             if (data != null) {
@@ -540,13 +622,31 @@ class HomeActivity : AppCompatActivity() {
                 }
                 tv.text = localizedLabel
                 tv.setOnClickListener { launchPackage(data.first) }
+                tv.isClickable = true
+                tv.isFocusable = true
+                tv.visibility = View.VISIBLE
             } else {
-                tv.text = getString(R.string.empty_shortcut)
-                tv.setOnClickListener { pickApp(slot) }
+                if (hideEmpty) {
+                    tv.text = ""
+                    tv.setOnClickListener(null)
+                    tv.isClickable = false
+                    tv.isFocusable = false
+                    tv.visibility = View.INVISIBLE
+                } else {
+                    tv.text = getString(R.string.empty_shortcut)
+                    tv.setOnClickListener { pickApp(slot) }
+                    tv.isClickable = true
+                    tv.isFocusable = true
+                    tv.visibility = View.VISIBLE
+                }
             }
             tv.setOnLongClickListener {
-                Toast.makeText(this, getString(R.string.change_shortcuts_hint), Toast.LENGTH_SHORT).show()
-                true
+                if (data != null || !hideEmpty) {
+                    Toast.makeText(this, getString(R.string.change_shortcuts_hint), Toast.LENGTH_SHORT).show()
+                    true
+                } else {
+                    false
+                }
             }
         }
     }
@@ -646,23 +746,126 @@ class HomeActivity : AppCompatActivity() {
 
     // ── Widget ────────────────────────────────────────────────────────────
 
+    @android.annotation.SuppressLint("ClickableViewAccessibility")
     private fun setupWidgetArea() {
         val savedId = PrefsHelper.loadWidgetId(this)
         if (savedId != -1) {
             hostWidget(savedId)
         } else {
-            binding.tvWidgetHint.visibility = View.VISIBLE
+            updateWidgetHintVisibility()
         }
 
-        binding.widgetContainer.setOnClickListener {
-            val currentId = PrefsHelper.loadWidgetId(this)
-            if (currentId == -1) {
+        var startX = 0f
+        var startY = 0f
+        var isHolding = false
+        val touchSlop = android.view.ViewConfiguration.get(this).scaledTouchSlop
+
+        val resetHoldProgress = {
+            holdAnimator?.cancel()
+            binding.widgetHoldProgressView.visibility = View.GONE
+            binding.widgetHoldProgressView.scaleX = 0f
+            binding.widgetHoldProgressView.scaleY = 0f
+            binding.widgetHoldProgressView.alpha = 0f
+            binding.tvWidgetHint.alpha = 1f
+        }
+
+        val cancelHoldProgress = {
+            holdAnimator?.cancel()
+            val currentScale = binding.widgetHoldProgressView.scaleX
+            val currentAlpha = binding.widgetHoldProgressView.alpha
+            val currentHintAlpha = binding.tvWidgetHint.alpha
+            holdAnimator = ValueAnimator.ofFloat(1f, 0f).apply {
+                duration = 250
+                interpolator = android.view.animation.DecelerateInterpolator()
+                addUpdateListener { animation ->
+                    val value = animation.animatedValue as Float
+                    binding.widgetHoldProgressView.scaleX = currentScale * value
+                    binding.widgetHoldProgressView.scaleY = currentScale * value
+                    binding.widgetHoldProgressView.alpha = currentAlpha * value
+                    binding.tvWidgetHint.alpha = currentHintAlpha + (1f - currentHintAlpha) * (1f - value)
+                }
+                addListener(object : AnimatorListenerAdapter() {
+                    override fun onAnimationEnd(animation: Animator) {
+                        binding.widgetHoldProgressView.visibility = View.GONE
+                        binding.tvWidgetHint.alpha = 1f
+                    }
+                })
+                start()
+            }
+        }
+
+        val holdRunnable = Runnable {
+            if (pendingWidgetId == -1) {
+                binding.widgetContainer.performHapticFeedback(android.view.HapticFeedbackConstants.LONG_PRESS)
+                resetHoldProgress()
                 val appWidgetId = appWidgetHost.allocateAppWidgetId()
                 pendingWidgetId = appWidgetId
-                val pickIntent = Intent(AppWidgetManager.ACTION_APPWIDGET_PICK).apply {
+                val pickIntent = Intent(this, WidgetPickerActivity::class.java).apply {
                     putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, appWidgetId)
                 }
                 pickWidgetLauncher.launch(pickIntent)
+            }
+            isHolding = false
+        }
+
+        binding.widgetContainer.setOnTouchListener { view, event ->
+            val currentId = PrefsHelper.loadWidgetId(this)
+            if (currentId != -1) {
+                return@setOnTouchListener false
+            }
+
+            when (event.action) {
+                MotionEvent.ACTION_DOWN -> {
+                    startX = event.x
+                    startY = event.y
+                    isHolding = true
+                    
+                    binding.widgetHoldProgressView.pivotX = event.x
+                    binding.widgetHoldProgressView.pivotY = event.y
+                    
+                    holdAnimator?.cancel()
+                    binding.widgetHoldProgressView.visibility = View.VISIBLE
+                    binding.widgetHoldProgressView.scaleX = 0f
+                    binding.widgetHoldProgressView.scaleY = 0f
+                    binding.widgetHoldProgressView.alpha = 0f
+
+                    holdAnimator = ValueAnimator.ofFloat(0f, 1f).apply {
+                        duration = 3000
+                        interpolator = android.view.animation.LinearInterpolator()
+                        addUpdateListener { animation ->
+                            val progress = animation.animatedValue as Float
+                            binding.widgetHoldProgressView.scaleX = progress
+                            binding.widgetHoldProgressView.scaleY = progress
+                            binding.widgetHoldProgressView.alpha = progress * maxHoldProgressAlpha
+                            binding.tvWidgetHint.alpha = 1f - progress
+                        }
+                        start()
+                    }
+
+                    view.postDelayed(holdRunnable, 3000)
+                    true
+                }
+                MotionEvent.ACTION_MOVE -> {
+                    if (isHolding) {
+                        val dx = event.x - startX
+                        val dy = event.y - startY
+                        if ((dx * dx + dy * dy) > touchSlop * touchSlop) {
+                            view.removeCallbacks(holdRunnable)
+                            cancelHoldProgress()
+                            isHolding = false
+                        }
+                    }
+                    true
+                }
+                MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
+                    if (isHolding) {
+                        view.removeCallbacks(holdRunnable)
+                        cancelHoldProgress()
+                        isHolding = false
+                    }
+                    true
+                }
+                else -> false
             }
         }
     }
@@ -682,9 +885,15 @@ class HomeActivity : AppCompatActivity() {
             FrameLayout.LayoutParams.MATCH_PARENT,
             FrameLayout.LayoutParams.MATCH_PARENT
         ))
-        binding.tvWidgetHint.visibility = View.GONE
         PrefsHelper.saveWidget(this, appWidgetId)
+        updateWidgetHintVisibility()
         Log.d("MinimalLauncher", "Widget $appWidgetId hosted successfully")
+    }
+
+    private fun updateWidgetHintVisibility() {
+        val hasWidget = PrefsHelper.loadWidgetId(this) != -1
+        val hideEmpty = PrefsHelper.loadHideEmptyTooltips(this)
+        binding.tvWidgetHint.visibility = if (hasWidget || hideEmpty) View.GONE else View.VISIBLE
     }
 
     // ── Dynamic Colors ───────────────────────────────────────────────────
@@ -742,6 +951,11 @@ class HomeActivity : AppCompatActivity() {
             binding.batteryProgress.setTrackColor(trackColor)
             binding.tvWidgetHint.setTextColor(hintColor)
             shortcutViews.forEach { it.setTextColor(primaryColor) }
+
+            // Dynamic progress tint & opacity
+            val progressColor = if (supportsDarkText) Color.BLACK else Color.WHITE
+            binding.widgetHoldProgressView.background?.setTint(progressColor)
+            maxHoldProgressAlpha = if (supportsDarkText) 0.65f else 0.8f
         }
     }
 
@@ -771,6 +985,7 @@ class HomeActivity : AppCompatActivity() {
         val dotsContainer = view.findViewById<android.widget.LinearLayout>(R.id.dotsContainer)
         val btnBack = view.findViewById<Button>(R.id.btnTutorialBack)
         val btnNext = view.findViewById<Button>(R.id.btnTutorialNext)
+        val tvSkip = view.findViewById<TextView>(R.id.tvTutorialSkip)
 
         val pageCount = viewFlipper.childCount
         val dots = mutableListOf<View>()
@@ -803,11 +1018,12 @@ class HomeActivity : AppCompatActivity() {
             }
             btnBack.visibility = if (position > 0) View.VISIBLE else View.GONE
             btnNext.text = if (position == pageCount - 1) getString(R.string.tutorial_done) else getString(R.string.tutorial_next)
+            tvSkip.visibility = if (position == pageCount - 1) View.GONE else View.VISIBLE
         }
 
         val dialog = androidx.appcompat.app.AlertDialog.Builder(this, android.R.style.Theme_DeviceDefault_Dialog_NoActionBar)
             .setView(view)
-            .setCancelable(true)
+            .setCancelable(false)
             .create()
 
         dialog.window?.setBackgroundDrawableResource(android.R.color.transparent)
@@ -828,7 +1044,15 @@ class HomeActivity : AppCompatActivity() {
             }
         }
 
+        tvSkip.setOnClickListener {
+            dialog.dismiss()
+        }
+
         updatePage(0)
         dialog.show()
+        dialog.window?.setLayout(
+            android.view.ViewGroup.LayoutParams.MATCH_PARENT,
+            android.view.ViewGroup.LayoutParams.MATCH_PARENT
+        )
     }
 }
