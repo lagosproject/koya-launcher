@@ -6,7 +6,7 @@
 
 <p align="center">
   <a href="https://github.com/lagosproject/koya-launcher/actions"><img src="https://github.com/lagosproject/koya-launcher/actions/workflows/ci.yml/badge.svg" alt="Android Build" /></a>
-  <a href="#license"><img src="https://img.shields.io/badge/License-Pending-lightgrey.svg" alt="License: Proprietary" /></a>
+  <a href="#license"><img src="https://img.shields.io/badge/License-MIT-blue.svg" alt="License: MIT" /></a>
   <a href="https://kotlinlang.org/"><img src="https://img.shields.io/badge/Kotlin-1.9.0-purple.svg" alt="Kotlin" /></a>
 </p>
 
@@ -88,4 +88,6 @@ Please see [CONTRIBUTING.md](CONTRIBUTING.md) for details on our code of conduct
 ---
 
 ## License
-License pending Play Store publishing decision. Copyright (c) 2026.
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+Copyright (c) 2026 LagosProject
