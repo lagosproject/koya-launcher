@@ -23,6 +23,7 @@ Koya Launcher is a distraction-free, minimalist Android home launcher designed t
 ## Table of Contents
 - [About the Project](#about-the-project)
 - [Key Features](#key-features)
+- [Screenshots](#screenshots)
 - [Prerequisites](#prerequisites)
 - [Installation](#installation)
 - [Configuration](#configuration)
@@ -47,6 +48,17 @@ Modern smartphones are packed with widgets, badges, and notification lists that 
 - **Widget Slot:** Long press to select and host any standard Android app widget.
 - **Optimized Search:** Pre-computed diacritical mark normalization for instant, lag-free search typing.
 - **Multilingual:** Built-in localization support for **English**, **Spanish** (Español), and **French** (Français).
+
+---
+
+## Screenshots
+
+<p align="center">
+  <img src="screenshots_automation/google_play/en-US/showcase_home.png" width="250" alt="Home Screen" />
+  <img src="screenshots_automation/google_play/en-US/showcase_drawer.png" width="250" alt="App Drawer" />
+  <img src="screenshots_automation/google_play/en-US/showcase_gestures.png" width="250" alt="Gestures" />
+  <img src="screenshots_automation/google_play/en-US/showcase_settings.png" width="250" alt="Settings" />
+</p>
 
 ---
 
