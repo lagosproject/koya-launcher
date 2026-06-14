@@ -8,6 +8,7 @@
   <a href="https://github.com/lagosproject/koya-launcher/actions"><img src="https://github.com/lagosproject/koya-launcher/actions/workflows/ci.yml/badge.svg" alt="Android Build" /></a>
   <a href="#license"><img src="https://img.shields.io/badge/License-Pending-lightgrey.svg" alt="License: Proprietary" /></a>
   <a href="https://kotlinlang.org/"><img src="https://img.shields.io/badge/Kotlin-1.9.0-purple.svg" alt="Kotlin" /></a>
+  <a href="https://play.google.com/store/apps/details?id=com.lagosproject.koya"><img src="https://img.shields.io/badge/Google_Play-Download-green.svg" alt="Get it on Google Play" /></a>
 </p>
 
 Koya Launcher is a distraction-free, minimalist Android home launcher designed to help you regain focus while still allowing you to access a single, essential widget at the top of your screen.
